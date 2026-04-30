@@ -7,6 +7,127 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+# PortoHub
+
+PortoHub adalah aplikasi web berbasis Laravel 13, Livewire, dan Vite.
+
+## Prasyarat
+
+- PHP 8.3+
+- Composer
+- Node.js (LTS) dan npm
+- Database: MySQL/MariaDB atau SQLite
+
+## Cara Clone Sampai Jalan (Development)
+
+1) Clone repo dan masuk ke folder proyek
+
+```bash
+git clone https://github.com/ZalSanDiv-PMPL/PortoHub.git
+cd PortoHub
+```
+
+2) Install dependency PHP
+
+```bash
+composer install
+```
+
+3) Salin file environment dan generate app key
+
+```bash
+copy .env.example .env
+php artisan key:generate
+```
+
+4) Konfigurasi database di file `.env`
+
+Contoh MySQL:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=portohub
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+5) Jalankan migrasi
+
+```bash
+php artisan migrate
+```
+
+6) Install dependency frontend
+
+```bash
+npm install
+```
+
+7) Jalankan aplikasi (dua terminal)
+
+Terminal A:
+
+```bash
+php artisan serve
+```
+
+Terminal B:
+
+```bash
+npm run dev
+```
+
+Buka aplikasi di http://127.0.0.1:8000
+
+### Alternatif cepat (semua sekaligus)
+
+```bash
+composer run dev
+```
+
+### Build untuk production
+
+```bash
+npm run build
+```
+
+## Git Workflow (Branch)
+
+### Membuat branch baru
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feat/nama-fitur
+```
+
+### Push branch ke remote
+
+```bash
+git push -u origin feat/nama-fitur
+```
+
+### Update branch dari main
+
+```bash
+git fetch origin
+git rebase origin/main
+```
+
+### Saran penamaan branch
+
+- feat/nama-fitur
+- fix/perbaikan-bug
+- chore/maintenance
+
+## Testing
+
+```bash
+php artisan test
+```
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
