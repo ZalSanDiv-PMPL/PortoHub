@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\GithubToken;
 use App\Models\User;
 use Livewire\Volt\Volt;
 
@@ -86,4 +87,31 @@ test('correct password must be provided to delete account', function () {
         ->assertNoRedirect();
 
     $this->assertNotNull($user->fresh());
+});
+
+test('github unlink is blocked until a local password exists', function () {
+    $user = User::factory()->create(['password_set_at' => null]);
+
+    GithubToken::create([
+        'user_id' => $user->id,
+        'access_token' => 'token',
+        'refresh_token' => 'refresh',
+        'github_id' => '123',
+        'github_username' => 'test-user',
+        'is_active' => true,
+        'scope' => 'user:email',
+        'token_type' => 'bearer',
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->post(route('github.unlink'));
+
+    $response->assertRedirect(route('profile'));
+    $response->assertSessionHas('error', 'Set a password before disconnecting GitHub.');
+
+    $this->assertDatabaseHas('github_tokens', [
+        'user_id' => $user->id,
+        'github_username' => 'test-user',
+    ]);
 });

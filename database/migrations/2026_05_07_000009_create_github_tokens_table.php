@@ -11,8 +11,8 @@ return new class extends Migration
     Schema::create('github_tokens', function (Blueprint $table) {
       $table->id();
       $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
-      $table->string('access_token');
-      $table->string('refresh_token')->nullable();
+      $table->longText('access_token');
+      $table->longText('refresh_token')->nullable();
       $table->timestamp('token_expires_at')->nullable();
       $table->string('scope')->nullable();
       $table->bigInteger('github_id')->nullable();

@@ -35,10 +35,11 @@ return [
         ],
     ],
 
-    'github' => [
-        'client_id' => env('GITHUB_CLIENT_ID'),
-        'client_secret' => env('GITHUB_CLIENT_SECRET'),
-        'redirect' => env('GITHUB_REDIRECT'),
+    'github_app' => [
+        'app_id' => env('GITHUB_APP_ID'),
+        'client_id' => env('GITHUB_APP_CLIENT_ID'),
+        'client_secret' => env('GITHUB_APP_CLIENT_SECRET'),
+        'callback' => env('GITHUB_APP_CALLBACK_URL'),
     ],
 
 ];
