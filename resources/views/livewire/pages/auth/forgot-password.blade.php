@@ -25,20 +25,24 @@ new #[Layout('layouts.guest')] class extends Component
         );
 
         if ($status != Password::RESET_LINK_SENT) {
-            $this->addError('email', __($status));
+            $this->addError('email', match ($status) {
+                Password::INVALID_USER => 'Email tersebut tidak terdaftar di sistem kami.',
+                Password::RESET_THROTTLED => 'Terlalu banyak permintaan. Coba lagi sebentar lagi.',
+                default => 'Kami tidak dapat mengirim tautan reset password saat ini.',
+            });
 
             return;
         }
 
         $this->reset('email');
 
-        session()->flash('status', __($status));
+        session()->flash('status', 'Tautan reset password telah dikirim ke email Anda.');
     }
 }; ?>
 
 <div>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+        {{ __('Lupa password? Tidak masalah. Masukkan alamat email Anda, lalu kami akan mengirimkan tautan untuk mengatur ulang password.') }}
     </div>
 
     <!-- Session Status -->
@@ -47,14 +51,14 @@ new #[Layout('layouts.guest')] class extends Component
     <form wire:submit="sendPasswordResetLink">
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="email" value="Email" />
             <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <div class="flex items-center justify-end mt-4">
             <x-primary-button>
-                {{ __('Email Password Reset Link') }}
+                Kirim tautan reset password
             </x-primary-button>
         </div>
     </form>
