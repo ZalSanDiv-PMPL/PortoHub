@@ -70,16 +70,6 @@ class GitHubAppAuthController extends Controller
                 ]);
 
             $tokenResponse = $response->json();
-
-                // Debug: log token response
-                if (config('app.debug')) {
-                    Log::debug('GitHub token response', [
-                        'status' => $response->status(),
-                        'access_token' => isset($tokenResponse['access_token']) ? substr($tokenResponse['access_token'], 0, 10) . '...' : null,
-                        'refresh_token' => isset($tokenResponse['refresh_token']) ? substr($tokenResponse['refresh_token'], 0, 10) . '...' : null,
-                        'expires_in' => $tokenResponse['expires_in'] ?? null,
-                    ]);
-                }
         } catch (\Exception $e) {
             Log::error('GitHub App token exchange failed', ['error' => $e->getMessage()]);
             return redirect()->route('login')->with('error', 'Token exchange failed.');
@@ -108,17 +98,6 @@ class GitHubAppAuthController extends Controller
         if (!isset($userResponse['id'])) {
             Log::error('GitHub API returned no user id', ['response' => $userResponse]);
             return redirect()->route('login')->with('error', 'Failed to fetch GitHub user info.');
-        }
-
-        // Debug log
-        if (config('app.debug')) {
-            Log::debug('GitHub App OAuth callback', [
-                'access_token' => substr($accessToken, 0, 10) . '...',
-                'refresh_token' => $refreshToken ? substr($refreshToken, 0, 10) . '...' : null,
-                'expires_in' => $expiresIn,
-                'github_id' => $userResponse['id'],
-                'github_username' => $userResponse['login'],
-            ]);
         }
 
         // Find or create user
