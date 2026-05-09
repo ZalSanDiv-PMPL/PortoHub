@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\LandingPageController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GitHubAppAuthController;
 
-Route::view('/', 'welcome');
+Route::get('/', [LandingPageController::class, 'index'])->name('home');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -13,7 +14,7 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // GitHub App OAuth
 Route::get('auth/github-app', [GitHubAppAuthController::class, 'redirectToProvider'])->name('github.redirect');

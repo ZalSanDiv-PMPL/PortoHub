@@ -37,13 +37,14 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('Terima kasih sudah mendaftar. Sebelum mulai, silakan verifikasi alamat email Anda lewat tautan yang baru saja kami kirim.') }}
+        {{ __('Terima kasih sudah mendaftar. Sebelum mulai, silakan verifikasi alamat email Anda lewat tautan yang baru
+        saja kami kirim.') }}
     </div>
 
     @if (session('status'))
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ session('status') }}
-        </div>
+    <div class="mb-4 font-medium text-sm text-green-600">
+        {{ session('status') }}
+    </div>
     @endif
 
     <div class="mt-4 flex items-center justify-between">
@@ -51,7 +52,8 @@ new #[Layout('layouts.guest')] class extends Component
             Kirim ulang email verifikasi
         </x-primary-button>
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <button wire:click="logout" type="submit"
+            class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             Keluar
         </button>
     </div>

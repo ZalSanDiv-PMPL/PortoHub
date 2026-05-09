@@ -9,6 +9,8 @@ class Documentation extends Model
 {
   use HasFactory;
 
+  protected $table = 'documentation';
+
   protected $fillable = [
     'project_id',
     'doc_type',

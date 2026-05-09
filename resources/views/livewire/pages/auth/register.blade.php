@@ -42,9 +42,12 @@ new #[Layout('layouts.auth-split')] class extends Component
     <div class="hidden md:flex items-center justify-center bg-gradient-to-b from-blue-800 to-sky-900 text-white p-8">
         <div class="max-w-lg">
             <h2 class="text-5xl font-extrabold">Gabung ke PortoHub</h2>
-            <p class="mt-6 text-lg leading-relaxed">Daftar sekarang untuk menjadi bagian dari PortoHub dan buat proyek Anda lebih terverifikasi serta profesional.</p>
+            <p class="mt-6 text-lg leading-relaxed">Daftar sekarang untuk menjadi bagian dari PortoHub dan buat proyek
+                Anda lebih terverifikasi serta profesional.</p>
             <div class="mt-8">
-                <a href="{{ route('login') }}" class="inline-flex w-full max-w-xs items-center justify-center px-4 py-3 bg-white/90 text-blue-800 font-semibold rounded-full hover:bg-white transition">Sudah punya akun? Masuk</a>
+                <a href="{{ route('login') }}"
+                    class="inline-flex w-full max-w-xs items-center justify-center px-4 py-3 bg-white/90 text-blue-800 font-semibold rounded-full hover:bg-white transition">Sudah
+                    punya akun? Masuk</a>
             </div>
         </div>
     </div>
@@ -57,24 +60,32 @@ new #[Layout('layouts.auth-split')] class extends Component
             <form wire:submit="register" class="space-y-4">
                 <div>
                     <x-input-label for="name" value="Nama" />
-                    <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required autofocus autocomplete="name" />
+                    <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required
+                        autofocus autocomplete="name" />
                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                 </div>
 
                 <div>
                     <x-input-label for="email" value="Email" />
-                    <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autocomplete="username" />
+                    <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email"
+                        required autocomplete="username" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
 
                 <div>
                     <x-input-label for="password" value="Kata sandi" />
                     <div class="relative">
-                        <input wire:model="password" id="password" class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" type="password" name="password" required autocomplete="new-password" />
-                        <button type="button" id="password-toggle" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
-                            <svg id="password-toggle-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
+                        <input wire:model="password" id="password"
+                            class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                            type="password" name="password" required autocomplete="new-password" />
+                        <button type="button" id="password-toggle" onclick="togglePassword('password')"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
+                            <svg id="password-toggle-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
                             </svg>
                         </button>
                     </div>
@@ -84,11 +95,18 @@ new #[Layout('layouts.auth-split')] class extends Component
                 <div>
                     <x-input-label for="password_confirmation" value="Konfirmasi kata sandi" />
                     <div class="relative">
-                        <input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" type="password" name="password_confirmation" required autocomplete="new-password" />
-                        <button type="button" id="password_confirmation-toggle" onclick="togglePassword('password_confirmation')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
-                            <svg id="password_confirmation-toggle-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
+                        <input wire:model="password_confirmation" id="password_confirmation"
+                            class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                            type="password" name="password_confirmation" required autocomplete="new-password" />
+                        <button type="button" id="password_confirmation-toggle"
+                            onclick="togglePassword('password_confirmation')"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
+                            <svg id="password_confirmation-toggle-icon" xmlns="http://www.w3.org/2000/svg"
+                                class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
                             </svg>
                         </button>
                     </div>
@@ -115,7 +133,8 @@ new #[Layout('layouts.auth-split')] class extends Component
                 </script>
 
                 <div class="w-full">
-                    <x-primary-button class="w-full justify-center bg-blue-700 focus:ring-blue-500 text-white">Daftar</x-primary-button>
+                    <x-primary-button class="w-full justify-center bg-blue-700 focus:ring-blue-500 text-white">Daftar
+                    </x-primary-button>
                 </div>
             </form>
             <div class="mt-6">

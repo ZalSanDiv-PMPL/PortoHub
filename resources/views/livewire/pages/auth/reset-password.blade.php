@@ -78,14 +78,16 @@ new #[Layout('layouts.guest')] class extends Component
         <!-- Email Address -->
         <div>
             <x-input-label for="email" value="Email" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
+            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required
+                autofocus autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" value="Kata sandi baru" />
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password"
+                required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
@@ -94,8 +96,7 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-label for="password_confirmation" value="Konfirmasi kata sandi baru" />
 
             <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
-                          name="password_confirmation" required autocomplete="new-password" />
+                type="password" name="password_confirmation" required autocomplete="new-password" />
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
