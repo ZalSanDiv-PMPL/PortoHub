@@ -149,7 +149,7 @@ class GitHubAppAuthController extends Controller
 
         Log::info('GitHub token stored', ['user_id' => $user->id, 'has_refresh' => !empty($refreshToken)]);
 
-        return redirect()->route('dashboard')->with('success', 'GitHub account connected.');
+        return redirect()->route('home')->with('success', 'GitHub account connected.');
     }
 
     /**

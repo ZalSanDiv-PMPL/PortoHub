@@ -33,7 +33,7 @@ new #[Layout('layouts.auth-split')] class extends Component
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirect(route('home', absolute: false), navigate: true);
     }
 }; ?>
 
@@ -61,14 +61,14 @@ new #[Layout('layouts.auth-split')] class extends Component
                 <div>
                     <x-input-label for="name" value="Nama" />
                     <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required
-                        autofocus autocomplete="name" />
+                        autofocus autocomplete="off" />
                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                 </div>
 
                 <div>
                     <x-input-label for="email" value="Email" />
                     <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email"
-                        required autocomplete="username" />
+                        required autocomplete="off" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
 
@@ -77,7 +77,7 @@ new #[Layout('layouts.auth-split')] class extends Component
                     <div class="relative">
                         <input wire:model="password" id="password"
                             class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                            type="password" name="password" required autocomplete="new-password" />
+                            type="password" name="password" required autocomplete="off" />
                         <button type="button" id="password-toggle" onclick="togglePassword('password')"
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
                             <svg id="password-toggle-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
@@ -97,7 +97,7 @@ new #[Layout('layouts.auth-split')] class extends Component
                     <div class="relative">
                         <input wire:model="password_confirmation" id="password_confirmation"
                             class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                            type="password" name="password_confirmation" required autocomplete="new-password" />
+                            type="password" name="password_confirmation" required autocomplete="off" />
                         <button type="button" id="password_confirmation-toggle"
                             onclick="togglePassword('password_confirmation')"
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">

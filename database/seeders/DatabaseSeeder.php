@@ -25,6 +25,15 @@ class DatabaseSeeder extends Seeder
             'password_set_at' => now(),
         ]);
 
+        User::updateOrCreate([
+            'email' => 'tupaikidal',
+        ], [
+            'name' => 'Tupai Kidal',
+            'role' => 'student',
+            'password' => 'Kambingguling_001',
+            'password_set_at' => now(),
+        ]);
+
         $this->call([
             DemoPortfolioSeeder::class,
         ]);

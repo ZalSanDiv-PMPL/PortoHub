@@ -13,7 +13,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-50 font-sans text-slate-900 antialiased">
+<body class="bg-[#F0F4F8] font-sans text-slate-900 antialiased">
     @php
         $projects = $projects ?? collect();
         $featuredProject = $featuredProject ?? null;
@@ -24,10 +24,8 @@
 
         <main>
             @include('landing.partials.hero')
-            @include('landing.partials.platform')
-            @include('landing.partials.features')
+            @include('landing.partials.gallery')
             @include('landing.partials.testimonials')
-            @include('landing.partials.cta')
         </main>
 
         @include('landing.partials.footer')

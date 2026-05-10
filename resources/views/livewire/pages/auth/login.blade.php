@@ -20,7 +20,7 @@ new #[Layout('layouts.auth-split')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(default: route('home', absolute: false), navigate: true);
     }
 }; ?>
 
@@ -35,9 +35,9 @@ new #[Layout('layouts.auth-split')] class extends Component
 
             <form wire:submit="login" class="space-y-4">
                 <div>
-                    <x-input-label for="email" value="Email" />
-                    <x-text-input wire:model="form.email" id="email" class="block mt-1 w-full" type="email" name="email"
-                        required autofocus autocomplete="username" />
+                    <x-input-label for="email" :value="__('Email / Username')" />
+                    <x-text-input wire:model="form.email" id="email" class="block mt-1 w-full" type="text" name="email"
+                        required autofocus autocomplete="off" />
                     <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
                 </div>
 
@@ -46,7 +46,7 @@ new #[Layout('layouts.auth-split')] class extends Component
                     <div class="relative">
                         <input wire:model="form.password" id="password"
                             class="block mt-1 w-full pr-10 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                            type="password" name="password" required autocomplete="current-password" />
+                            type="password" name="password" required autocomplete="off" />
                         <button type="button" id="password-toggle" onclick="togglePassword('password')"
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
                             <svg id="password-toggle-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
