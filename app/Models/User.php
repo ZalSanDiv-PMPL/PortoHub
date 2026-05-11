@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'password_set_at'])]
+#[Fillable(['name', 'email', 'password', 'password_set_at', 'role', 'is_active', 'last_login_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -49,5 +49,20 @@ class User extends Authenticatable
     public function hasLocalPassword(): bool
     {
         return filled($this->password_set_at);
+    }
+
+    public function isTeacher(): bool
+    {
+        return $this->role === 'teacher';
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->role === 'student';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

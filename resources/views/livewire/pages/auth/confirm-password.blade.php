@@ -23,7 +23,7 @@ new #[Layout('layouts.guest')] class extends Component
             'password' => $this->password,
         ])) {
             throw ValidationException::withMessages([
-                'password' => __('auth.password'),
+                'password' => 'Password yang Anda masukkan tidak sesuai.',
             ]);
         }
 
@@ -35,27 +35,23 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+        {{ __('Bagian ini memerlukan konfirmasi. Masukkan password Anda untuk melanjutkan.') }}
     </div>
 
     <form wire:submit="confirmPassword">
         <!-- Password -->
         <div>
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" value="Kata sandi" />
 
-            <x-text-input wire:model="password"
-                          id="password"
-                          class="block mt-1 w-full"
-                          type="password"
-                          name="password"
-                          required autocomplete="current-password" />
+            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password"
+                required autocomplete="current-password" />
 
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <div class="flex justify-end mt-4">
             <x-primary-button>
-                {{ __('Confirm') }}
+                Konfirmasi
             </x-primary-button>
         </div>
     </form>
