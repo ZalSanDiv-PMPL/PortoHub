@@ -25,6 +25,7 @@ class DemoPortfolioSeeder extends Seeder
             ['email' => 'hendra.rpl@portohub.test'],
             [
                 'name' => 'Pak Hendra',
+                'role' => 'teacher',
                 'password' => 'password',
                 'password_set_at' => now(),
                 'email_verified_at' => now(),
@@ -111,6 +112,7 @@ class DemoPortfolioSeeder extends Seeder
                 ['email' => $studentData['email']],
                 [
                     'name' => $studentData['name'],
+                    'role' => 'student',
                     'password' => 'password',
                     'password_set_at' => now(),
                     'email_verified_at' => now(),
