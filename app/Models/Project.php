@@ -13,6 +13,7 @@ class Project extends Model
     'student_id',
     'title',
     'description',
+    'thumbnail_path',
     'development_model',
     'github_url',
     'status',
@@ -21,12 +22,17 @@ class Project extends Model
     'rejection_reason',
   ];
 
+  protected $casts = [
+    'submission_date' => 'datetime',
+    'approval_date' => 'datetime',
+  ];
+
   public function student()
   {
     return $this->belongsTo(Student::class);
   }
 
-  public function validations()
+  public function validation()
   {
     return $this->hasOne(Validation::class);
   }

@@ -23,6 +23,11 @@ class Validation extends Model
     'notes',
   ];
 
+  protected $casts = [
+    'is_approved' => 'boolean',
+    'validation_date' => 'datetime',
+  ];
+
   public function project()
   {
     return $this->belongsTo(Project::class);

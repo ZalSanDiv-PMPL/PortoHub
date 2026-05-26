@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => 'Admin PortoHub',
             'role' => 'admin',
-            'password' => 'password',
+            'password' => env('SEED_ADMIN_PASSWORD', 'password'),
             'password_set_at' => now(),
             'email_verified_at' => now(),
         ]);
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => 'Tupai Kidal',
             'role' => 'student',
-            'password' => 'Kambingguling_001',
+            'password' => env('SEED_TEST_PASSWORD', 'password'),
             'password_set_at' => now(),
         ]);
 

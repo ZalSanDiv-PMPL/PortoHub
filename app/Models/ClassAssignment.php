@@ -19,6 +19,10 @@ class ClassAssignment extends Model
     'is_active',
   ];
 
+  protected $casts = [
+    'is_active' => 'boolean',
+  ];
+
   public function teacher()
   {
     return $this->belongsTo(Teacher::class);

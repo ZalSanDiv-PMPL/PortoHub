@@ -5,23 +5,61 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Str;
+use Livewire\WithFileUploads;
 
 new class extends Component {
-    #[Validate('required|min:5')]
+    use WithFileUploads {
+        _finishUpload as traitFinishUpload;
+    }
+
+    public function _finishUpload($name, $tmpFilenames, $isMultiple)
+    {
+        // Cegat bug nama file kosong yang menyebabkan UnableToRetrieveMetadata
+        if (empty($tmpFilenames) || $tmpFilenames === [''] || (isset($tmpFilenames[0]) && $tmpFilenames[0] === '')) {
+            $this->addError($name, 'Gagal mengunggah gambar. Ukuran file mungkin melebihi batasan server (maks. 2MB).');
+            return;
+        }
+
+        $this->traitFinishUpload($name, $tmpFilenames, $isMultiple);
+    }
+    #[Validate('required|min:5', message: [
+        'title.required' => 'Judul proyek wajib diisi.',
+        'title.min' => 'Judul proyek minimal 5 karakter.',
+    ])]
     public string $title = '';
 
-    #[Validate('required|min:15')]
+    #[Validate('required|min:15', message: [
+        'description.required' => 'Deskripsi proyek wajib diisi.',
+        'description.min' => 'Deskripsi proyek minimal 15 karakter.',
+    ])]
     public string $description = '';
 
-    #[Validate('required|in:waterfall,agile,other')]
+    #[Validate('required|in:waterfall,agile,other', message: [
+        'development_model.required' => 'Model pengembangan wajib dipilih.',
+        'development_model.in' => 'Model pengembangan tidak valid.',
+    ])]
     public string $development_model = 'waterfall';
 
-    #[Validate('nullable|url')]
+    #[Validate('nullable|url', message: [
+        'github_url.url' => 'URL GitHub harus berupa alamat yang valid.',
+    ])]
     public string $github_url = '';
+
+    #[Validate('required|image|mimes:jpg,jpeg,png,webp|max:2048', message: [
+        'thumbnail.required' => 'Gambar sampul proyek wajib diunggah.',
+        'thumbnail.image' => 'File harus berupa gambar (JPG, PNG, atau WebP).',
+        'thumbnail.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
+        'thumbnail.max' => 'Ukuran gambar tidak boleh lebih dari 2MB.',
+    ])]
+    public $thumbnail;
 
     public bool $isModalOpen = false;
     public bool $isLoadingRepos = false;
     public array $githubRepos = [];
+
+    // Modal detail
+    public bool $isDetailModalOpen = false;
+    public ?Project $selectedProjectDetail = null;
 
     public function openModal()
     {
@@ -35,7 +73,7 @@ new class extends Component {
     {
         $this->isModalOpen = false;
         $this->isLoadingRepos = false;
-        $this->reset(['title', 'description', 'development_model', 'github_url', 'githubRepos']);
+        $this->reset(['title', 'description', 'development_model', 'github_url', 'githubRepos', 'thumbnail']);
         $this->resetValidation();
     }
 
@@ -93,10 +131,16 @@ new class extends Component {
             return;
         }
 
+        $thumbnailPath = null;
+        if ($this->thumbnail) {
+            $thumbnailPath = $this->thumbnail->store('thumbnails/' . $student->id, 'public');
+        }
+
         Project::create([
             'student_id' => $student->id,
             'title' => $this->title,
             'description' => $this->description,
+            'thumbnail_path' => $thumbnailPath,
             'development_model' => $this->development_model,
             'github_url' => $this->github_url,
             'status' => 'submitted',
@@ -110,7 +154,7 @@ new class extends Component {
     public function with()
     {
         $student = auth()->user()->student;
-        $projects = $student ? $student->projects()->orderBy('created_at', 'desc')->get() : collect();
+        $projects = $student ? $student->projects()->with('validation')->orderBy('created_at', 'desc')->get() : collect();
 
         $totalProyek = $projects->count();
         $sedangDireviu = $projects->where('status', 'under_review')->count();
@@ -122,6 +166,30 @@ new class extends Component {
             'proyekLulus' => $proyekLulus,
             'projects' => $projects,
         ];
+    }
+
+    public function openDetailModal($id)
+    {
+        $this->selectedProjectDetail = Project::with('validation')->find($id);
+        $this->isDetailModalOpen = true;
+    }
+
+    public function closeDetailModal()
+    {
+        $this->isDetailModalOpen = false;
+        $this->selectedProjectDetail = null;
+    }
+
+    public function resubmitProject()
+    {
+        if ($this->selectedProjectDetail && $this->selectedProjectDetail->status === 'rejected') {
+            $this->selectedProjectDetail->update([
+                'status' => 'submitted',
+                'submission_date' => now()
+            ]);
+            $this->closeDetailModal();
+            session()->flash('success', 'Proyek berhasil diajukan ulang untuk direviu.');
+        }
     }
 }; ?>
 
@@ -266,7 +334,7 @@ new class extends Component {
                 </div>
                 <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex items-center justify-between">
                     <a href="{{ $project->github_url }}" target="_blank" class="text-sm font-semibold text-blue-600 hover:text-blue-500">Repository</a>
-                    <button class="text-sm font-semibold text-slate-700 hover:text-slate-900">Detail &rarr;</button>
+                    <button wire:click="openDetailModal({{ $project->id }})" class="text-sm font-semibold text-slate-700 hover:text-slate-900">Detail &rarr;</button>
                 </div>
             </div>
         @endforeach
@@ -292,7 +360,7 @@ new class extends Component {
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                 <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl ring-1 ring-slate-200 animate-scale-up">
                     
-                    <form wire:submit="submitProject">
+                    <form wire:submit.prevent="submitProject">
                         <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                             <!-- Header Modal (Top-down layout) -->
                             <div class="flex items-center space-x-3 mb-6">
@@ -366,6 +434,29 @@ new class extends Component {
                                 @endif
 
                                 <div>
+                                    <label for="thumbnail" class="block text-sm font-semibold text-slate-900 mb-1">Gambar Sampul Proyek <span class="text-red-500">*</span></label>
+                                    <input type="file" wire:model="thumbnail" id="thumbnail" accept=".jpg,.jpeg,.png,.webp" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl bg-white focus:outline-none">
+                                    <p class="mt-1 text-xs text-slate-500">Format JPG, PNG, WebP — maksimal 2MB.</p>
+                                    
+                                    {{-- Loading Indicator --}}
+                                    <div wire:loading wire:target="thumbnail" class="mt-2 inline-flex items-center gap-1.5 text-blue-600">
+                                        <svg class="animate-spin h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span class="text-xs font-medium leading-none">Mengunggah gambar...</span>
+                                    </div>
+
+                                    @error('thumbnail') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
+                                    
+                                    @if ($thumbnail)
+                                        <div class="mt-2 relative inline-block">
+                                            <img src="{{ $thumbnail->temporaryUrl() }}" alt="Preview" class="h-32 object-cover rounded-xl border border-slate-200 shadow-sm">
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div>
                                     <label for="title" class="block text-sm font-semibold text-slate-900 mb-1">Judul Proyek</label>
                                     <input type="text" wire:model="title" id="title" class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Misal: Sistem Manajemen Keuangan">
                                     @error('title') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
@@ -403,6 +494,93 @@ new class extends Component {
                             <button type="button" wire:click="closeModal" class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition">Batal</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Modal Detail & Feedback Proyek -->
+    @if($isDetailModalOpen && $selectedProjectDetail)
+    <div class="relative z-50" aria-labelledby="modal-detail-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity animate-fade-in"></div>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl ring-1 ring-slate-200 animate-scale-up">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full @if($selectedProjectDetail->status === 'approved') bg-emerald-50 text-emerald-600 @elseif($selectedProjectDetail->status === 'rejected') bg-rose-50 text-rose-600 @else bg-blue-50 text-blue-600 @endif">
+                                @if($selectedProjectDetail->status === 'approved')
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                @elseif($selectedProjectDetail->status === 'rejected')
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                @else
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                @endif
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold leading-6 text-slate-900" id="modal-detail-title">{{ $selectedProjectDetail->title }}</h3>
+                                <p class="mt-1 text-sm text-slate-500">Status: <span class="font-semibold">{{ ucfirst(str_replace('_', ' ', $selectedProjectDetail->status)) }}</span></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            @if($selectedProjectDetail->thumbnail_path)
+                                <div>
+                                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Gambar Sampul</h4>
+                                    <img src="{{ asset('storage/' . $selectedProjectDetail->thumbnail_path) }}" class="rounded-xl border border-slate-200 w-full object-cover max-h-64 shadow-sm" alt="Thumbnail">
+                                </div>
+                            @endif
+                            @if($selectedProjectDetail->status === 'rejected')
+                                <div class="rounded-xl bg-rose-50 p-4 border border-rose-100 text-rose-700">
+                                    <h4 class="text-sm font-bold flex items-center mb-1"><svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Proyek Memerlukan Revisi</h4>
+                                    <p class="text-sm">{{ $selectedProjectDetail->rejection_reason ?? 'Tidak ada catatan khusus.' }}</p>
+                                </div>
+                            @endif
+
+                            @if($selectedProjectDetail->validation)
+                                <!-- Scoring Section -->
+                                <div>
+                                    <h4 class="text-sm font-semibold text-slate-900 mb-3 border-b border-slate-100 pb-2">Rincian Penilaian Guru</h4>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                        <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                                            <div class="text-2xl font-bold text-slate-900">{{ $selectedProjectDetail->validation->functionality_score ?? '-' }}</div>
+                                            <div class="text-xs text-slate-500 font-medium mt-1">Fungsionalitas</div>
+                                        </div>
+                                        <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                                            <div class="text-2xl font-bold text-slate-900">{{ $selectedProjectDetail->validation->code_quality_score ?? '-' }}</div>
+                                            <div class="text-xs text-slate-500 font-medium mt-1">Kualitas Kode</div>
+                                        </div>
+                                        <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                                            <div class="text-2xl font-bold text-slate-900">{{ $selectedProjectDetail->validation->documentation_score ?? '-' }}</div>
+                                            <div class="text-xs text-slate-500 font-medium mt-1">Dokumentasi</div>
+                                        </div>
+                                        <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                                            <div class="text-2xl font-bold text-slate-900">{{ $selectedProjectDetail->validation->originality_score ?? '-' }}</div>
+                                            <div class="text-xs text-slate-500 font-medium mt-1">Orisinalitas</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if($selectedProjectDetail->status === 'approved' && $selectedProjectDetail->validation->notes)
+                                <div class="rounded-xl bg-emerald-50 p-4 border border-emerald-100 text-emerald-800">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider mb-1 opacity-70">Feedback Guru</h4>
+                                    <p class="text-sm">{{ $selectedProjectDetail->validation->notes }}</p>
+                                </div>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-4 py-4 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-2xl border-t border-slate-200">
+                        @if($selectedProjectDetail->status === 'rejected')
+                        <button type="button" wire:click="resubmitProject" class="inline-flex w-full justify-center rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:ml-3 sm:w-auto transition">
+                            Kirim Ulang Proyek
+                        </button>
+                        @endif
+                        <button type="button" wire:click="closeDetailModal" class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition">
+                            Tutup
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

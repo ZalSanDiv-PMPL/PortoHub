@@ -6,7 +6,14 @@ use App\Models\Project;
 new class extends Component {
     public $selectedProject = null;
     public $showReviewModal = false;
+    public string $classFilter = '';
     public $validationNotes = '';
+    
+    // Scoring rubrics (0-100)
+    public int $functionalityScore = 80;
+    public int $codeQualityScore = 80;
+    public int $documentationScore = 80;
+    public int $originalityScore = 80;
 
     public function with()
     {
@@ -17,14 +24,24 @@ new class extends Component {
                 'siswaDiampu' => 0,
                 'menungguValidasi' => 0,
                 'totalKelas' => 0,
+                'daftarKelas' => collect(),
                 'antreanProyek' => collect()
             ];
         }
 
         $siswaDiampu = $teacher->students()->count();
-        $totalKelas = $teacher->classAssignments()->distinct('class')->count();
+        $daftarKelas = $teacher->classAssignments()->distinct('class')->pluck('class');
+        $totalKelas = $daftarKelas->count();
         
         $studentIds = $teacher->students()->pluck('students.id');
+
+        // Filter berdasarkan kelas jika dipilih
+        if (!empty($this->classFilter)) {
+            $filteredStudentIds = $teacher->classAssignments()
+                ->where('class', $this->classFilter)
+                ->pluck('student_id');
+            $studentIds = $studentIds->intersect($filteredStudentIds);
+        }
         
         $antreanProyek = Project::whereIn('student_id', $studentIds)
             ->whereIn('status', ['submitted', 'under_review'])
@@ -40,13 +57,30 @@ new class extends Component {
             'siswaDiampu' => $siswaDiampu,
             'menungguValidasi' => $menungguValidasi,
             'totalKelas' => $totalKelas,
+            'daftarKelas' => $daftarKelas,
             'antreanProyek' => $antreanProyek,
         ];
     }
 
     public function openReviewModal($projectId)
     {
-        $this->selectedProject = Project::with(['student.user', 'student.classAssignments'])->find($projectId);
+        $teacher = auth()->user()->teacher;
+        $studentIds = $teacher->students()->pluck('students.id');
+
+        $this->selectedProject = Project::with(['student.user', 'student.classAssignments'])
+            ->whereIn('student_id', $studentIds)
+            ->find($projectId);
+
+        if (!$this->selectedProject) {
+            session()->flash('error', 'Proyek tidak ditemukan atau bukan milik siswa Anda.');
+            return;
+        }
+
+        // Set status menjadi under_review saat guru membuka modal
+        if ($this->selectedProject->status === 'submitted') {
+            $this->selectedProject->update(['status' => 'under_review']);
+        }
+
         $this->validationNotes = '';
         $this->showReviewModal = true;
     }
@@ -56,11 +90,60 @@ new class extends Component {
         $this->showReviewModal = false;
         $this->selectedProject = null;
         $this->validationNotes = '';
+        $this->functionalityScore = 80;
+        $this->codeQualityScore = 80;
+        $this->documentationScore = 80;
+        $this->originalityScore = 80;
+    }
+
+    /**
+     * Validasi rubrik dan catatan sebelum approve/reject.
+     */
+    private function validateReview(): void
+    {
+        $this->validate([
+            'validationNotes' => 'required|string|min:5',
+            'functionalityScore' => 'required|integer|min:0|max:100',
+            'codeQualityScore' => 'required|integer|min:0|max:100',
+            'documentationScore' => 'required|integer|min:0|max:100',
+            'originalityScore' => 'required|integer|min:0|max:100',
+        ], [
+            'validationNotes.required' => 'Catatan validasi wajib diisi.',
+            'validationNotes.min' => 'Catatan validasi minimal 5 karakter.',
+            'functionalityScore.required' => 'Skor fungsionalitas wajib diisi.',
+            'functionalityScore.min' => 'Skor minimal 0.',
+            'functionalityScore.max' => 'Skor maksimal 100.',
+            'codeQualityScore.required' => 'Skor kualitas kode wajib diisi.',
+            'documentationScore.required' => 'Skor dokumentasi wajib diisi.',
+            'originalityScore.required' => 'Skor orisinalitas wajib diisi.',
+        ]);
+    }
+
+    /**
+     * Simpan data validasi ke tabel validations.
+     */
+    private function saveValidation(bool $isApproved): void
+    {
+        \App\Models\Validation::updateOrCreate(
+            ['project_id' => $this->selectedProject->id],
+            [
+                'teacher_id' => auth()->user()->teacher->id,
+                'is_approved' => $isApproved,
+                'validation_date' => now(),
+                'notes' => $this->validationNotes,
+                'functionality_score' => $this->functionalityScore,
+                'code_quality_score' => $this->codeQualityScore,
+                'documentation_score' => $this->documentationScore,
+                'originality_score' => $this->originalityScore,
+            ]
+        );
     }
 
     public function approveProject()
     {
         if (!$this->selectedProject) return;
+
+        $this->validateReview();
         
         $this->selectedProject->update([
             'status' => 'approved',
@@ -68,26 +151,16 @@ new class extends Component {
             'rejection_reason' => null
         ]);
 
-        \App\Models\Validation::updateOrCreate(
-            ['project_id' => $this->selectedProject->id],
-            [
-                'teacher_id' => auth()->user()->teacher->id,
-                'is_approved' => true,
-                'validation_date' => now(),
-                'notes' => $this->validationNotes,
-                'functionality_score' => 90, // Default MVP score
-                'code_quality_score' => 90,
-                'documentation_score' => 90,
-                'originality_score' => 90,
-            ]
-        );
-
+        $this->saveValidation(true);
         $this->closeReviewModal();
+        session()->flash('success', 'Proyek berhasil disetujui.');
     }
 
     public function rejectProject()
     {
         if (!$this->selectedProject) return;
+
+        $this->validateReview();
         
         $this->selectedProject->update([
             'status' => 'rejected',
@@ -95,21 +168,9 @@ new class extends Component {
             'approval_date' => null
         ]);
 
-        \App\Models\Validation::updateOrCreate(
-            ['project_id' => $this->selectedProject->id],
-            [
-                'teacher_id' => auth()->user()->teacher->id,
-                'is_approved' => false,
-                'validation_date' => now(),
-                'notes' => $this->validationNotes,
-                'functionality_score' => 50,
-                'code_quality_score' => 50,
-                'documentation_score' => 50,
-                'originality_score' => 50,
-            ]
-        );
-
+        $this->saveValidation(false);
         $this->closeReviewModal();
+        session()->flash('success', 'Proyek ditolak untuk direvisi.');
     }
 }; ?>
 
@@ -121,11 +182,11 @@ new class extends Component {
             <p class="mt-2 text-slate-600">Selamat datang, {{ explode(' ', auth()->user()->name)[0] }}. Kelola kelas dan periksa progres siswa Anda.</p>
         </div>
         <div class="flex items-center space-x-3">
-            <select class="rounded-xl border-slate-200 bg-white/80 backdrop-blur-md px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition hover:bg-white">
+            <select wire:model.live="classFilter" class="rounded-xl border-slate-200 bg-white/80 backdrop-blur-md px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition hover:bg-white">
                 <option value="">Semua Kelas</option>
-                <!-- Opsi kelas akan dimuat dinamis nanti -->
-                <option value="X RPL A">X RPL A</option>
-                <option value="X RPL B">X RPL B</option>
+                @foreach($daftarKelas as $kelas)
+                    <option value="{{ $kelas }}">{{ $kelas }}</option>
+                @endforeach
             </select>
         </div>
     </div>
@@ -302,6 +363,12 @@ new class extends Component {
                         <!-- Project Details -->
                         <div class="space-y-4 mb-8">
                             <div class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                                @if($selectedProject->thumbnail_path)
+                                    <div class="mb-4">
+                                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Gambar Sampul</h4>
+                                        <img src="{{ asset('storage/' . $selectedProject->thumbnail_path) }}" class="rounded-xl border border-slate-200 w-full object-cover max-h-64 shadow-sm" alt="Thumbnail">
+                                    </div>
+                                @endif
                                 <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Deskripsi Proyek</h4>
                                 <p class="text-sm text-slate-700">{{ $selectedProject->description }}</p>
                             </div>
@@ -320,10 +387,35 @@ new class extends Component {
                             </div>
                         </div>
 
+                        <!-- Scoring Rubrics -->
+                        <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Fungsionalitas (0-100)</label>
+                                <input type="number" min="0" max="100" wire:model="functionalityScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
+                                @error('functionalityScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Kualitas Kode (0-100)</label>
+                                <input type="number" min="0" max="100" wire:model="codeQualityScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
+                                @error('codeQualityScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Dokumentasi (0-100)</label>
+                                <input type="number" min="0" max="100" wire:model="documentationScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
+                                @error('documentationScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Orisinalitas (0-100)</label>
+                                <input type="number" min="0" max="100" wire:model="originalityScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
+                                @error('originalityScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
                         <!-- Feedback Form -->
                         <div>
                             <label class="block text-sm font-semibold text-slate-900 mb-2">Catatan Validasi & Feedback (Wajib untuk Penolakan)</label>
                             <textarea wire:model="validationNotes" rows="4" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition" placeholder="Tuliskan catatan Anda di sini..."></textarea>
+                            @error('validationNotes') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -332,11 +424,19 @@ new class extends Component {
                         <button wire:click="closeReviewModal" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300/50 hover:bg-white transition">
                             Tutup
                         </button>
-                        <button wire:click="rejectProject" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-rose-50/80 text-rose-700 border border-rose-200/50 px-4 py-2.5 text-sm font-semibold hover:bg-rose-100 transition">
-                            Tolak (Revisi)
+                        <button wire:click="rejectProject" wire:loading.attr="disabled" wire:target="rejectProject" type="button" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl bg-rose-50/80 text-rose-700 border border-rose-200/50 px-4 py-2.5 text-sm font-semibold hover:bg-rose-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="rejectProject">Tolak (Revisi)</span>
+                            <span wire:loading wire:target="rejectProject" class="inline-flex items-center gap-1.5">
+                                <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                Memproses...
+                            </span>
                         </button>
-                        <button wire:click="approveProject" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
-                            Terima & Validasi
+                        <button wire:click="approveProject" wire:loading.attr="disabled" wire:target="approveProject" type="button" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="approveProject">Terima & Validasi</span>
+                            <span wire:loading wire:target="approveProject" class="inline-flex items-center gap-1.5">
+                                <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                Memproses...
+                            </span>
                         </button>
                     </div>
                     @endif

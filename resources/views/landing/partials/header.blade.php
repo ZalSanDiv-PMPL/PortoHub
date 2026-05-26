@@ -1,14 +1,16 @@
 <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-8">
-            <a href="#top" class="flex items-center gap-2">
+            <a href="{{ route('home') }}" class="flex items-center gap-2">
                 <p class="text-2xl font-bold tracking-tight text-blue-800">PortoHub</p>
             </a>
 
             <nav class="hidden items-center gap-6 lg:flex" aria-label="Primary">
-                <a href="{{ route('home') }}#gallery" class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Galeri</a>
+                <a href="{{ route('gallery') }}" class="text-sm font-medium transition {{ request()->routeIs('gallery') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-blue-700' }}">Galeri</a>
                 @auth
-                    <a href="{{ route('home') }}#portofolio" class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Portofolioku</a>
+                    @if(auth()->user()->isStudent())
+                        <a href="{{ route('home') }}#portofolio" class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Portofolioku</a>
+                    @endif
                     <a href="{{ route('dashboard') }}" class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}">Dasbor</a>
                 @else
                     <a href="{{ route('home') }}#testimoni" class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Testimoni</a>
@@ -34,9 +36,11 @@
                     </svg>
                 </button>
 
-                <a href="#" class="inline-flex items-center rounded-md bg-blue-800 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700">
-                    Unggah Proyek
-                </a>
+                @if(auth()->user()->isStudent())
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center rounded-md bg-blue-800 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700">
+                        Unggah Proyek
+                    </a>
+                @endif
                 
                 <div class="relative inline-block text-left" id="profile-dropdown-container">
                     <button type="button" id="profile-menu-button" class="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

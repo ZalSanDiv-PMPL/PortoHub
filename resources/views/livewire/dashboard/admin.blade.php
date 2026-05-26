@@ -404,7 +404,7 @@ new class extends Component {
                                     <td class="px-6 py-4 text-slate-600">{{ $assignment->teacher->user->name ?? 'N/A' }}</td>
                                     <td class="px-6 py-4 text-slate-600">{{ $assignment->student->user->name ?? 'N/A' }}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <button wire:click="deleteAssignment({{ $assignment->id }})" class="text-rose-600 hover:text-rose-800 font-semibold bg-rose-50 px-3 py-1.5 rounded-lg transition hover:bg-rose-100 text-xs">Hapus</button>
+                                        <button x-on:click.prevent="if(confirm('Yakin ingin menghapus penempatan kelas ini?')) { $wire.deleteAssignment({{ $assignment->id }}) }" class="text-rose-600 hover:text-rose-800 font-semibold bg-rose-50 px-3 py-1.5 rounded-lg transition hover:bg-rose-100 text-xs">Hapus</button>
                                     </td>
                                 </tr>
                             @empty

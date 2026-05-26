@@ -5,9 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GitHubAppAuthController;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
+Route::view('/gallery', 'gallery')->name('gallery');
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'role:admin,teacher,student'])
     ->name('dashboard');
 
 Route::view('profile', 'profile')

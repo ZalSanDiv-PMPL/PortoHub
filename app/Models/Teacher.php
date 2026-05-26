@@ -19,6 +19,10 @@ class Teacher extends Model
     'is_validated',
   ];
 
+  protected $casts = [
+    'is_validated' => 'boolean',
+  ];
+
   public function user()
   {
     return $this->belongsTo(User::class);
