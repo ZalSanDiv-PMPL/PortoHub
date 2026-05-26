@@ -115,13 +115,13 @@ new class extends Component {
 
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <!-- Welcome Header -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/50 shadow-sm ring-1 ring-slate-200/50">
         <div>
             <h2 class="text-3xl font-bold tracking-tight text-slate-900">Dashboard Guru</h2>
-            <p class="mt-2 text-slate-600">Selamat datang, {{ auth()->user()->name }}. Kelola kelas dan periksa progres siswa Anda.</p>
+            <p class="mt-2 text-slate-600">Selamat datang, {{ explode(' ', auth()->user()->name)[0] }}. Kelola kelas dan periksa progres siswa Anda.</p>
         </div>
         <div class="flex items-center space-x-3">
-            <select class="rounded-xl border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <select class="rounded-xl border-slate-200 bg-white/80 backdrop-blur-md px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition hover:bg-white">
                 <option value="">Semua Kelas</option>
                 <!-- Opsi kelas akan dimuat dinamis nanti -->
                 <option value="X RPL A">X RPL A</option>
@@ -133,9 +133,9 @@ new class extends Component {
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <!-- Card 1 -->
-        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md">
+        <div class="relative overflow-hidden rounded-2xl bg-white/70 backdrop-blur-xl p-6 shadow-sm ring-1 ring-slate-200/50 border border-white/50 transition hover:shadow-md hover:bg-white/90">
             <dt>
-                <div class="absolute rounded-xl bg-indigo-50 p-3">
+                <div class="absolute rounded-xl bg-indigo-50/80 p-3 ring-1 ring-indigo-100/50">
                     <svg class="h-6 w-6 text-indigo-700" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                     </svg>
@@ -148,9 +148,9 @@ new class extends Component {
         </div>
 
         <!-- Card 2 -->
-        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md">
+        <div class="relative overflow-hidden rounded-2xl bg-white/70 backdrop-blur-xl p-6 shadow-sm ring-1 ring-slate-200/50 border border-white/50 transition hover:shadow-md hover:bg-white/90">
             <dt>
-                <div class="absolute rounded-xl bg-rose-50 p-3">
+                <div class="absolute rounded-xl bg-rose-50/80 p-3 ring-1 ring-rose-100/50">
                     <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
@@ -163,9 +163,9 @@ new class extends Component {
         </div>
 
         <!-- Card 3 -->
-        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md">
+        <div class="relative overflow-hidden rounded-2xl bg-white/70 backdrop-blur-xl p-6 shadow-sm ring-1 ring-slate-200/50 border border-white/50 transition hover:shadow-md hover:bg-white/90">
             <dt>
-                <div class="absolute rounded-xl bg-blue-50 p-3">
+                <div class="absolute rounded-xl bg-blue-50/80 p-3 ring-1 ring-blue-100/50">
                     <svg class="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                     </svg>
@@ -187,15 +187,15 @@ new class extends Component {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </div>
-            <input type="text" class="block w-full sm:w-64 rounded-xl border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Cari siswa atau proyek...">
+            <input type="text" class="block w-full sm:w-64 rounded-xl border-slate-200 bg-white/70 backdrop-blur-md py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition hover:bg-white/90" placeholder="Cari siswa atau proyek...">
         </div>
     </div>
 
     <!-- Table Container -->
-    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div class="overflow-hidden rounded-2xl bg-white/60 backdrop-blur-xl shadow-sm ring-1 ring-slate-200/50 border border-white/50">
         <div class="min-w-full overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-left text-sm whitespace-nowrap">
-                <thead class="bg-slate-50">
+            <table class="min-w-full divide-y divide-slate-200/60 text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50/50 backdrop-blur-md">
                     <tr>
                         <th scope="col" class="px-6 py-4 font-semibold text-slate-900">Nama Siswa</th>
                         <th scope="col" class="px-6 py-4 font-semibold text-slate-900">Kelas</th>
@@ -204,9 +204,9 @@ new class extends Component {
                         <th scope="col" class="px-6 py-4 font-semibold text-slate-900 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200 bg-white">
+                <tbody class="divide-y divide-slate-200/60 bg-transparent">
                     @forelse($antreanProyek as $proyek)
-                        <tr class="hover:bg-slate-50">
+                        <tr class="transition hover:bg-white/60">
                             <td class="whitespace-nowrap px-6 py-4">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
@@ -272,7 +272,7 @@ new class extends Component {
              x-transition:leave="ease-in duration-200" 
              x-transition:leave-start="opacity-100" 
              x-transition:leave-end="opacity-0" 
-             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
+             class="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"></div>
 
         <!-- Modal Panel -->
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -285,10 +285,10 @@ new class extends Component {
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
                      x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
                      @click.away="$wire.closeReviewModal()"
-                     class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                     class="relative transform overflow-hidden rounded-2xl bg-white/90 backdrop-blur-xl border border-white/50 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl ring-1 ring-slate-200/50">
                      
                     @if($selectedProject)
-                    <div class="bg-white p-6 sm:p-8">
+                    <div class="p-6 sm:p-8">
                         <div class="flex items-center space-x-4 mb-6">
                             <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xl">
                                 {{ substr($selectedProject->student->user->name, 0, 1) }}
@@ -328,11 +328,11 @@ new class extends Component {
                     </div>
 
                     <!-- Actions -->
-                    <div class="bg-slate-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2 sm:gap-0 border-t border-slate-100 rounded-b-2xl">
-                        <button wire:click="closeReviewModal" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition">
+                    <div class="bg-slate-50/50 backdrop-blur-md px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2 sm:gap-0 border-t border-slate-200/60 rounded-b-2xl">
+                        <button wire:click="closeReviewModal" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300/50 hover:bg-white transition">
                             Tutup
                         </button>
-                        <button wire:click="rejectProject" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-rose-50 text-rose-700 border border-rose-200 px-4 py-2.5 text-sm font-semibold hover:bg-rose-100 transition">
+                        <button wire:click="rejectProject" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-rose-50/80 text-rose-700 border border-rose-200/50 px-4 py-2.5 text-sm font-semibold hover:bg-rose-100 transition">
                             Tolak (Revisi)
                         </button>
                         <button wire:click="approveProject" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">

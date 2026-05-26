@@ -15,6 +15,8 @@ class GithubToken extends Model
 
   protected $casts = [
     'token_expires_at' => 'datetime',
+    'access_token' => 'encrypted',
+    'refresh_token' => 'encrypted',
   ];
 
   protected $hidden = [
@@ -40,38 +42,5 @@ class GithubToken extends Model
   public function user()
   {
     return $this->belongsTo(User::class);
-  }
-
-  public function getAccessTokenAttribute($value)
-  {
-    return $this->decryptTokenValue($value);
-  }
-
-  public function setAccessTokenAttribute($value): void
-  {
-    $this->attributes['access_token'] = $value === null ? null : Crypt::encryptString($value);
-  }
-
-  public function getRefreshTokenAttribute($value)
-  {
-    return $this->decryptTokenValue($value);
-  }
-
-  public function setRefreshTokenAttribute($value): void
-  {
-    $this->attributes['refresh_token'] = $value === null ? null : Crypt::encryptString($value);
-  }
-
-  private function decryptTokenValue($value)
-  {
-    if ($value === null || $value === '') {
-      return $value;
-    }
-
-    try {
-      return Crypt::decryptString($value);
-    } catch (DecryptException) {
-      return $value;
-    }
   }
 }

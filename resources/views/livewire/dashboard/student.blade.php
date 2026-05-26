@@ -88,6 +88,11 @@ new class extends Component {
             return;
         }
 
+        if (!$student->is_validated) {
+            session()->flash('error', 'Akun Anda sedang menunggu validasi oleh Admin Sekolah. Anda belum dapat mengirimkan proyek.');
+            return;
+        }
+
         Project::create([
             'student_id' => $student->id,
             'title' => $this->title,
@@ -127,13 +132,36 @@ new class extends Component {
             <h2 class="text-3xl font-bold tracking-tight text-slate-900">Halo, {{ explode(' ', auth()->user()->name)[0] }}!</h2>
             <p class="mt-2 text-slate-600">Selamat datang di Dashboard Siswa. Pantau terus progres proyekmu di sini.</p>
         </div>
+        
+        @if(auth()->user()->student && auth()->user()->student->is_validated)
         <button wire:click="openModal" class="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 group">
             <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
             Ajukan Proyek Baru
         </button>
+        @else
+        <button disabled class="inline-flex items-center justify-center rounded-xl bg-slate-300 cursor-not-allowed px-5 py-2.5 text-sm font-semibold text-white shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Ajukan Proyek Baru (Terkunci)
+        </button>
+        @endif
     </div>
+
+    @if(auth()->user()->student && !auth()->user()->student->is_validated)
+    <!-- Validation Warning Banner -->
+    <div class="mb-8 p-4 rounded-xl bg-amber-50/80 backdrop-blur-md border border-amber-200 text-amber-800 flex items-start sm:items-center">
+        <svg class="w-6 h-6 mr-3 flex-shrink-0 text-amber-600 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+            <h4 class="font-bold text-sm">Akun Anda sedang dalam peninjauan.</h4>
+            <p class="text-sm mt-1 sm:mt-0">Admin sekolah perlu menyetujui akun Anda dan menempatkan Anda ke dalam kelas sebelum Anda bisa mengirimkan proyek portofolio.</p>
+        </div>
+    </div>
+    @endif
 
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -200,12 +228,21 @@ new class extends Component {
         <h3 class="mt-4 text-sm font-semibold text-slate-900">Belum ada proyek</h3>
         <p class="mt-1 text-sm text-slate-500">Mulai bangun portofolio Anda dengan mengajukan proyek pertama.</p>
         <div class="mt-6">
+            @if(auth()->user()->student && auth()->user()->student->is_validated)
             <button type="button" wire:click="openModal" class="inline-flex items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                 <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                 </svg>
                 Ajukan Proyek
             </button>
+            @else
+            <button disabled type="button" class="inline-flex items-center rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-white shadow-sm cursor-not-allowed">
+                <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Ajukan Proyek (Terkunci)
+            </button>
+            @endif
         </div>
     </div>
     @else
