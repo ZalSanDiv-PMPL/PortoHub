@@ -2,6 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\Project;
+use App\Models\Comment;
 
 new class extends Component {
     public $selectedProject = null;
@@ -14,6 +15,11 @@ new class extends Component {
     public int $codeQualityScore = 80;
     public int $documentationScore = 80;
     public int $originalityScore = 80;
+
+    // Comment system
+    public string $commentContent = '';
+    public string $commentType = 'general';
+    public $projectComments = [];
 
     public function with()
     {
@@ -81,7 +87,10 @@ new class extends Component {
             $this->selectedProject->update(['status' => 'under_review']);
         }
 
+        $this->loadComments();
         $this->validationNotes = '';
+        $this->commentContent = '';
+        $this->commentType = 'general';
         $this->showReviewModal = true;
     }
 
@@ -94,6 +103,54 @@ new class extends Component {
         $this->codeQualityScore = 80;
         $this->documentationScore = 80;
         $this->originalityScore = 80;
+        $this->commentContent = '';
+        $this->commentType = 'general';
+        $this->projectComments = [];
+    }
+
+    public function loadComments()
+    {
+        if ($this->selectedProject) {
+            $this->projectComments = Comment::where('project_id', $this->selectedProject->id)
+                ->with('teacher.user')
+                ->orderByDesc('is_pinned')
+                ->orderByDesc('created_at')
+                ->get()
+                ->toArray();
+        }
+    }
+
+    public function addComment()
+    {
+        $this->validate([
+            'commentContent' => 'required|string|min:3',
+            'commentType' => 'required|in:general,code_review,requirement,suggestion',
+        ], [
+            'commentContent.required' => 'Isi komentar wajib diisi.',
+            'commentContent.min' => 'Komentar minimal 3 karakter.',
+        ]);
+
+        Comment::create([
+            'project_id' => $this->selectedProject->id,
+            'teacher_id' => auth()->user()->teacher->id,
+            'content' => $this->commentContent,
+            'comment_type' => $this->commentType,
+            'status' => 'pending',
+            'is_pinned' => false,
+        ]);
+
+        $this->commentContent = '';
+        $this->commentType = 'general';
+        $this->loadComments();
+    }
+
+    public function togglePinComment($commentId)
+    {
+        $comment = Comment::find($commentId);
+        if ($comment && $comment->teacher_id === auth()->user()->teacher->id) {
+            $comment->update(['is_pinned' => !$comment->is_pinned]);
+            $this->loadComments();
+        }
     }
 
     /**
@@ -416,6 +473,96 @@ new class extends Component {
                             <label class="block text-sm font-semibold text-slate-900 mb-2">Catatan Validasi & Feedback (Wajib untuk Penolakan)</label>
                             <textarea wire:model="validationNotes" rows="4" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition" placeholder="Tuliskan catatan Anda di sini..."></textarea>
                             @error('validationNotes') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Comment Section -->
+                        <div class="border-t border-slate-200/60 pt-6 mt-6">
+                            <h4 class="text-sm font-bold text-slate-900 mb-4 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                                Komentar & Catatan Perbaikan
+                                @if(count($projectComments) > 0)
+                                <span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ count($projectComments) }}</span>
+                                @endif
+                            </h4>
+
+                            <!-- Add Comment Form -->
+                            <div class="mb-5 rounded-xl bg-slate-50/80 p-4 border border-slate-200/60">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <select wire:model="commentType" class="rounded-lg border-slate-200 bg-white text-xs font-medium py-1.5 px-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                                        <option value="general">Umum</option>
+                                        <option value="code_review">Code Review</option>
+                                        <option value="requirement">Requirement</option>
+                                        <option value="suggestion">Saran</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <textarea wire:model="commentContent" rows="2" class="flex-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition" placeholder="Tulis komentar untuk siswa..."></textarea>
+                                    <button wire:click="addComment" wire:loading.attr="disabled" wire:target="addComment" type="button" class="self-end inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition disabled:opacity-50">
+                                        <span wire:loading.remove wire:target="addComment">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                                        </span>
+                                        <span wire:loading wire:target="addComment">
+                                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                        </span>
+                                    </button>
+                                </div>
+                                @error('commentContent') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Comment History -->
+                            @if(count($projectComments) > 0)
+                            <div class="space-y-3 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;">
+                                @foreach($projectComments as $comment)
+                                <div class="rounded-xl p-3.5 border transition {{ $comment['is_pinned'] ? 'bg-amber-50/60 border-amber-200/60 ring-1 ring-amber-100' : 'bg-white/60 border-slate-200/60' }}">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">
+                                                {{ substr($comment['teacher']['user']['name'] ?? '?', 0, 1) }}
+                                            </div>
+                                            <div class="min-w-0">
+                                                <span class="text-xs font-semibold text-slate-900">{{ $comment['teacher']['user']['name'] ?? 'Guru' }}</span>
+                                                <span class="text-xs text-slate-400 ml-1">• {{ \Carbon\Carbon::parse($comment['created_at'])->diffForHumans() }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                                            @php
+                                                $typeBadges = [
+                                                    'general' => 'bg-slate-100 text-slate-600',
+                                                    'code_review' => 'bg-violet-100 text-violet-700',
+                                                    'requirement' => 'bg-amber-100 text-amber-700',
+                                                    'suggestion' => 'bg-blue-100 text-blue-700',
+                                                ];
+                                                $typeLabels = [
+                                                    'general' => 'Umum',
+                                                    'code_review' => 'Code Review',
+                                                    'requirement' => 'Requirement',
+                                                    'suggestion' => 'Saran',
+                                                ];
+                                            @endphp
+                                            <span class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium {{ $typeBadges[$comment['comment_type']] ?? 'bg-slate-100 text-slate-600' }}">{{ $typeLabels[$comment['comment_type']] ?? $comment['comment_type'] }}</span>
+                                            @if($comment['is_pinned'])
+                                                <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v2h2a1 1 0 010 2h-1.382l-.724 5.447A2 2 0 0112.918 16h-5.836a2 2 0 01-1.976-1.553L4.382 9H3a1 1 0 010-2h2V5z"/></svg>
+                                            @endif
+                                            @if(($comment['teacher_id'] ?? null) === auth()->user()->teacher?->id)
+                                            <button wire:click="togglePinComment({{ $comment['id'] }})" type="button" class="text-slate-400 hover:text-amber-500 transition" title="{{ $comment['is_pinned'] ? 'Lepas pin' : 'Pin komentar' }}">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-slate-700 mt-2 leading-relaxed">{{ $comment['content'] }}</p>
+                                    @if($comment['status'] === 'viewed')
+                                    <span class="inline-flex items-center mt-2 text-[10px] text-emerald-600 font-medium"><svg class="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Sudah dibaca siswa</span>
+                                    @endif
+                                </div>
+                                @endforeach
+                            </div>
+                            @else
+                            <div class="text-center py-6 text-slate-400">
+                                <svg class="mx-auto h-8 w-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                                <p class="text-xs">Belum ada komentar untuk proyek ini.</p>
+                            </div>
+                            @endif
                         </div>
                     </div>
 

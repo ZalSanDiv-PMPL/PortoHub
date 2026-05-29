@@ -13,7 +13,8 @@ new class extends Component {
     {
         $query = Project::query()
             ->with(['student.user', 'student.classAssignments', 'githubMetadata', 'validation', 'urls'])
-            ->where('status', 'approved');
+            ->where('status', 'approved')
+            ->publiclyVisible();
 
         if (!empty($this->search)) {
             $query->where(function ($q) {
@@ -125,7 +126,18 @@ new class extends Component {
                         </div>
 
                         <h3 class="text-xl font-bold text-slate-900 mb-2 line-clamp-1">{{ $project->title }}</h3>
-                        <p class="text-sm text-slate-600 line-clamp-3 mb-6 flex-1">{{ $project->description }}</p>
+                        <p class="text-sm text-slate-600 line-clamp-3 mb-4 flex-1">{{ $project->description }}</p>
+
+                        @if($project->tech_stack && count($project->tech_stack) > 0)
+                        <div class="flex flex-wrap gap-1.5 mb-4">
+                            @foreach(array_slice($project->tech_stack, 0, 5) as $tech)
+                            <span class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-700/10">{{ $tech }}</span>
+                            @endforeach
+                            @if(count($project->tech_stack) > 5)
+                            <span class="text-[10px] text-slate-400 font-medium self-center">+{{ count($project->tech_stack) - 5 }}</span>
+                            @endif
+                        </div>
+                        @endif
 
                         <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
                             @if($project->github_url)
@@ -139,9 +151,9 @@ new class extends Component {
                             <span class="text-sm text-slate-400">Tidak ada tautan</span>
                             @endif
                             
-                            <button class="text-sm font-bold text-blue-600 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                            <a href="{{ route('project.show', $project) }}" class="text-sm font-bold text-blue-600 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                                 Lihat Detail &rarr;
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

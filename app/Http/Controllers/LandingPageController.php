@@ -9,6 +9,7 @@ class LandingPageController extends Controller
         $featuredProjects = \App\Models\Project::query()
             ->with('student.user')
             ->where('status', 'approved')
+            ->publiclyVisible()
             ->orderByDesc('approval_date')
             ->take(4)
             ->get();

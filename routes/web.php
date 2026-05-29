@@ -7,6 +7,14 @@ use App\Http\Controllers\Auth\GitHubAppAuthController;
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
 Route::view('/gallery', 'gallery')->name('gallery');
 
+Route::get('/projects/{project}', function (App\Models\Project $project) {
+    if ($project->status !== 'approved' || $project->visibility !== 'public') {
+        abort(404);
+    }
+    $project->load(['student.user', 'student.classAssignments', 'validation', 'githubMetadata', 'documentation', 'urls', 'comments.teacher.user']);
+    return view('project-detail', compact('project'));
+})->name('project.show');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified', 'role:admin,teacher,student'])
     ->name('dashboard');

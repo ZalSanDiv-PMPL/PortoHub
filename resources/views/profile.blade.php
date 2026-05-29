@@ -26,6 +26,12 @@
             </div>
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
+                    <livewire:profile.update-academic-info-form />
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
                     <h3 class="text-lg font-medium">GitHub Integration</h3>
                     <p class="text-sm text-gray-500 mt-1">Connect your GitHub account to sync repository metadata and
                         link projects.</p>

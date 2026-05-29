@@ -18,6 +18,10 @@ class Comment extends Model
     'is_pinned',
   ];
 
+  protected $casts = [
+    'is_pinned' => 'boolean',
+  ];
+
   public function project()
   {
     return $this->belongsTo(Project::class);

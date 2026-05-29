@@ -17,6 +17,8 @@ class Project extends Model
     'development_model',
     'github_url',
     'status',
+    'visibility',
+    'tech_stack',
     'submission_date',
     'approval_date',
     'rejection_reason',
@@ -25,7 +27,13 @@ class Project extends Model
   protected $casts = [
     'submission_date' => 'datetime',
     'approval_date' => 'datetime',
+    'tech_stack' => 'array',
   ];
+
+  public function scopePubliclyVisible($query)
+  {
+    return $query->where('visibility', 'public');
+  }
 
   public function student()
   {
