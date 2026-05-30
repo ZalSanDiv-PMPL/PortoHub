@@ -53,8 +53,12 @@
                             {{ substr($project->student->user->name ?? '?', 0, 1) }}
                         </div>
                         <div>
-                            <p class="font-semibold text-slate-900">{{ $project->student->user->name ?? 'Siswa' }}</p>
-                            <p class="text-sm text-slate-500">{{ $project->student->classAssignments->first()->class ?? '' }} &bull; Angkatan {{ $project->student->year ?? '' }}</p>
+                            <p class="font-semibold text-slate-900 group-hover:text-blue-600 transition">
+                                <a href="{{ route('student.profile', $project->student_id) }}" class="hover:underline">
+                                    {{ $project->student->user->name ?? 'Siswa' }}
+                                </a>
+                            </p>
+                            <p class="text-sm text-slate-500">{{ $project->student->active_class }} &bull; Angkatan {{ $project->student->year ?? '' }}</p>
                         </div>
                     </div>
 
@@ -188,7 +192,7 @@
                     @foreach($project->urls->where('is_public', true) as $url)
                     <a href="{{ $url->url }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 hover:bg-white hover:border-blue-200 transition shadow-sm">
                         <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                        {{ ucfirst($url->url_type ?? 'Link') }}{{ $url->description ? ': ' . $url->description : '' }}
+                        {{ $url->description ?: ucwords(str_replace('_', ' ', $url->url_type ?? 'Link')) }}
                     </a>
                     @endforeach
                 </div>

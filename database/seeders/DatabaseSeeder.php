@@ -41,12 +41,20 @@ class DatabaseSeeder extends Seeder
             ['user_id' => $tupaiUser->id],
             [
                 'nis' => '2026099',
-                'class' => 'X RPL B',
                 'year' => 2024,
                 'phone' => '08129999999',
                 'address' => 'Jakarta, Indonesia',
-                'github_username' => 'tupaikidal-dev',
                 'is_validated' => true,
+            ]
+        );
+
+        \App\Models\GithubToken::updateOrCreate(
+            ['user_id' => $tupaiUser->id],
+            [
+                'github_id' => 99999999,
+                'github_username' => 'tupaikidal-dev',
+                'access_token' => 'dummy_token_' . \Illuminate\Support\Str::random(10),
+                'is_active' => true,
             ]
         );
 

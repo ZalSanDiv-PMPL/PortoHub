@@ -123,12 +123,20 @@ class DemoPortfolioSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'nis' => $studentData['nis'],
-                    'class' => $studentData['class'],
                     'year' => 2024,
                     'phone' => '0812' . substr($studentData['nis'], -6),
                     'address' => 'Malang, Jawa Timur',
-                    'github_username' => $studentData['github_username'],
                     'is_validated' => true,
+                ]
+            );
+
+            \App\Models\GithubToken::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'github_id' => rand(1000000, 9999999),
+                    'github_username' => $studentData['github_username'],
+                    'access_token' => 'dummy_token_' . \Illuminate\Support\Str::random(10),
+                    'is_active' => true,
                 ]
             );
 

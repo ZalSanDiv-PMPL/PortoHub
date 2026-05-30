@@ -193,7 +193,6 @@ class GitHubAppAuthController extends Controller
         Student::create([
             'user_id' => $user->id,
             'nis' => '',
-            'class' => '',
             'year' => date('Y'),
         ]);
 

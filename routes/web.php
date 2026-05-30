@@ -15,6 +15,8 @@ Route::get('/projects/{project}', function (App\Models\Project $project) {
     return view('project-detail', compact('project'));
 })->name('project.show');
 
+Route::get('/student/{id}', \App\Livewire\Public\StudentProfile::class)->name('student.profile');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified', 'role:admin,teacher,student'])
     ->name('dashboard');

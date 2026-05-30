@@ -12,11 +12,9 @@ return new class extends Migration
       $table->id();
       $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
       $table->string('nis')->unique();
-      $table->string('class');
       $table->integer('year');
       $table->string('phone')->nullable();
       $table->text('address')->nullable();
-      $table->string('github_username')->nullable();
       $table->boolean('is_validated')->default(false);
       $table->timestamps();
     });

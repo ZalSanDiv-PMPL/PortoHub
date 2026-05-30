@@ -15,11 +15,9 @@ class StudentFactory extends Factory
         return [
             'user_id' => User::factory(),
             'nis' => $this->faker->numerify('##########'),
-            'class' => $this->faker->randomElement(['XII RPL 1', 'XII RPL 2', 'XI RPL 1', 'XI RPL 2']),
             'year' => $this->faker->randomElement([2024, 2025, 2026]),
             'phone' => $this->faker->phoneNumber(),
             'address' => $this->faker->address(),
-            'github_username' => $this->faker->userName(),
             'is_validated' => true,
         ];
     }

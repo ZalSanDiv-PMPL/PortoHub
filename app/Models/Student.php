@@ -12,11 +12,9 @@ class Student extends Model
   protected $fillable = [
     'user_id',
     'nis',
-    'class',
     'year',
     'phone',
     'address',
-    'github_username',
     'is_validated',
   ];
 
@@ -44,5 +42,16 @@ class Student extends Model
   public function projects()
   {
     return $this->hasMany(Project::class);
+  }
+
+  /**
+   * Mendapatkan nama kelas siswa yang sedang aktif.
+   */
+  public function getActiveClassAttribute()
+  {
+      $assignment = $this->classAssignments->where('is_active', true)->first() 
+                 ?? $this->classAssignments->sortByDesc('created_at')->first();
+                 
+      return $assignment ? $assignment->class : 'Belum ada kelas';
   }
 }
