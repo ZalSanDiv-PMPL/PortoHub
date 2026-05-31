@@ -9,7 +9,7 @@
                 <a href="{{ route('gallery') }}" class="text-sm font-medium transition {{ request()->routeIs('gallery') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-blue-700' }}">Galeri</a>
                 @auth
                     @if(auth()->user()->isStudent())
-                        <a href="{{ route('home') }}#portofolio" class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Portofolioku</a>
+                        <a href="{{ route('student.profile', auth()->user()->student->id) }}" class="text-sm font-medium transition {{ request()->routeIs('student.profile') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-blue-700' }}">Portofolioku</a>
                     @endif
                     <a href="{{ route('dashboard') }}" class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}">Dasbor</a>
                 @else
@@ -45,7 +45,7 @@
                 <div class="relative inline-block text-left" id="profile-dropdown-container">
                     <button type="button" id="profile-menu-button" class="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <span class="sr-only">Open user menu</span>
-                        <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=random" alt="">
+                        <x-avatar :url="auth()->user()->avatar_url" :name="auth()->user()->name" class="h-8 w-8 rounded-full object-cover" />
                     </button>
                     
                     <div id="profile-menu" class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-xl bg-white py-2 shadow-lg ring-1 ring-slate-900/5 focus:outline-none" role="menu">

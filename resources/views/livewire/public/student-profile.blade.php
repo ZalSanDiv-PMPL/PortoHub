@@ -16,16 +16,9 @@
             <div class="md:flex md:items-center md:justify-between">
                 <div class="flex items-center gap-6">
                     <!-- Avatar -->
-                    @php
-                        $ghUsername = $student->user->githubToken->github_username ?? null;
-                    @endphp
                     <div class="h-24 w-24 rounded-full bg-white/20 p-1 flex-shrink-0 shadow-lg ring-4 ring-white/10">
                         <div class="h-full w-full rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-3xl overflow-hidden">
-                            @if($ghUsername)
-                                <img src="https://github.com/{{ $ghUsername }}.png" alt="{{ $student->user->name }}" class="h-full w-full object-cover">
-                            @else
-                                {{ substr($student->user->name, 0, 1) }}
-                            @endif
+                            <x-avatar :url="$student->user->avatar_url" :name="$student->user->name" />
                         </div>
                     </div>
                     <!-- Identity -->
@@ -35,6 +28,9 @@
                             <svg class="w-5 h-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             Siswa &bull; {{ $student->active_class }} &bull; Angkatan {{ $student->year }}
                         </p>
+                        @php
+                            $ghUsername = $student->user->githubToken->github_username ?? null;
+                        @endphp
                         @if($ghUsername)
                         <div class="mt-2 flex items-center gap-3">
                             <a href="https://github.com/{{ $ghUsername }}" target="_blank" class="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition">
@@ -46,27 +42,37 @@
                     </div>
                 </div>
                 
-                <!-- Share Button (Alpine JS) -->
-                <div class="mt-6 flex flex-col-reverse justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-3 sm:space-y-0 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3" x-data="{
-                    shareProfile() {
-                        const url = window.location.href;
-                        const title = '{{ addslashes($student->user->name) }} - Portofolio Proyek';
-                        
-                        if (navigator.share) {
-                            navigator.share({
-                                title: title,
-                                url: url
-                            }).catch(console.error);
-                        } else {
-                            navigator.clipboard.writeText(url);
-                            alert('Link profil berhasil disalin ke clipboard!');
+                <!-- Action Buttons -->
+                <div class="mt-6 flex flex-col-reverse justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-3 sm:space-y-0 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
+                    @if(auth()->check() && auth()->id() === $student->user_id)
+                        <a href="{{ route('profile') }}" class="inline-flex items-center justify-center rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-white/20 ring-1 ring-inset ring-white/20 transition" wire:navigate>
+                            <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            Edit Profil
+                        </a>
+                    @endif
+                    <div x-data="{
+                        shareProfile() {
+                            const url = window.location.href;
+                            const title = '{{ addslashes($student->user->name) }} - Portofolio Proyek';
+                            
+                            if (navigator.share) {
+                                navigator.share({
+                                    title: title,
+                                    url: url
+                                }).catch(console.error);
+                            } else {
+                                navigator.clipboard.writeText(url);
+                                alert('Link profil berhasil disalin ke clipboard!');
+                            }
                         }
-                    }
-                }">
-                    <button @click="shareProfile()" type="button" class="inline-flex items-center justify-center rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-white/20 hover:bg-white/20 transition backdrop-blur-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                        Bagikan Profil
-                    </button>
+                    }">
+                        <button type="button" @click="shareProfile" class="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition w-full sm:w-auto">
+                            <svg class="-ml-0.5 mr-1.5 h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path d="M13 4.5a2.5 2.5 0 11.702 1.737L6.97 9.604a2.518 2.518 0 010 .792l6.733 3.367a2.5 2.5 0 11-.671 1.341l-6.733-3.367a2.5 2.5 0 110-3.474l6.733-3.367A2.5 2.5 0 1113 4.5z" />
+                            </svg>
+                            Bagikan Profil
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

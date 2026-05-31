@@ -116,12 +116,12 @@ new class extends Component {
                     <!-- Project Info -->
                     <div class="p-6 flex-1 flex flex-col">
                         <div class="flex items-center space-x-3 mb-4">
-                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                                {{ substr($project->student->user->name, 0, 1) }}
+                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm overflow-hidden">
+                                <x-avatar :url="$project->student->user->avatar_url" :name="$project->student->user->name" />
                             </div>
                             <div class="text-sm">
                                 <p class="font-medium text-slate-900">{{ $project->student->user->name }}</p>
-                                <p class="text-slate-500 text-xs">{{ $project->student->classAssignments->first()->class ?? '' }}</p>
+                                <p class="text-slate-500 text-xs">{{ $project->student->active_class }}</p>
                             </div>
                         </div>
 

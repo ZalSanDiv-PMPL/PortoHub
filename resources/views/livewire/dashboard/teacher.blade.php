@@ -328,8 +328,8 @@ new class extends Component {
                             <td class="whitespace-nowrap px-6 py-4">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
-                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-                                            {{ substr($proyek->student->user->name, 0, 1) }}
+                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold overflow-hidden">
+                                            <x-avatar :url="$proyek->student->user->avatar_url" :name="$proyek->student->user->name" />
                                         </div>
                                     </div>
                                     <div class="ml-4">
@@ -339,7 +339,7 @@ new class extends Component {
                                 </div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-slate-500">
-                                {{ $proyek->student->classAssignments->first()->class ?? $proyek->student->class }}
+                                {{ $proyek->student->active_class }}
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-slate-900 font-medium">{{ $proyek->title }}</div>
@@ -408,12 +408,12 @@ new class extends Component {
                     @if($selectedProject)
                     <div class="p-6 sm:p-8">
                         <div class="flex items-center space-x-4 mb-6">
-                            <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xl">
-                                {{ substr($selectedProject->student->user->name, 0, 1) }}
+                            <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xl overflow-hidden">
+                                <x-avatar :url="$selectedProject->student->user->avatar_url" :name="$selectedProject->student->user->name" />
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-slate-900" id="modal-title">{{ $selectedProject->title }}</h3>
-                                <p class="text-sm text-slate-500">Oleh: {{ $selectedProject->student->user->name }} • {{ $selectedProject->student->classAssignments->first()->class ?? $selectedProject->student->class }}</p>
+                                <p class="text-sm text-slate-500">Oleh: {{ $selectedProject->student->user->name }} • {{ $selectedProject->student->active_class }}</p>
                             </div>
                         </div>
 
@@ -516,8 +516,8 @@ new class extends Component {
                                 <div class="rounded-xl p-3.5 border transition {{ $comment['is_pinned'] ? 'bg-amber-50/60 border-amber-200/60 ring-1 ring-amber-100' : 'bg-white/60 border-slate-200/60' }}">
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="flex items-center gap-2 min-w-0">
-                                            <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">
-                                                {{ substr($comment['teacher']['user']['name'] ?? '?', 0, 1) }}
+                                            <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0 overflow-hidden">
+                                                <x-avatar :url="$comment['teacher']['user']['avatar_url'] ?? null" :name="$comment['teacher']['user']['name'] ?? 'Guru'" />
                                             </div>
                                             <div class="min-w-0">
                                                 <span class="text-xs font-semibold text-slate-900">{{ $comment['teacher']['user']['name'] ?? 'Guru' }}</span>

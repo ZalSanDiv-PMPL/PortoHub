@@ -310,10 +310,20 @@ new class extends Component {
                             @forelse($pendingStudents as $student)
                                 <tr class="transition hover:bg-white/60">
                                     <td class="px-6 py-4 font-medium text-slate-900">{{ $student->user->name }}<br><span class="text-xs text-slate-500 font-normal">{{ $student->user->email }}</span></td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $student->nis }}</td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $student->year }}</td>
+                                    <td class="px-6 py-4 text-slate-600">
+                                        @if(empty($student->nis))
+                                            <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Belum isi NIS</span>
+                                        @else
+                                            {{ $student->nis }}
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600">{{ $student->year ?? '-' }}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <button wire:click="openValidateStudentModal({{ $student->id }})" class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Validasi & Tempatkan</button>
+                                        @if(empty($student->nis))
+                                            <button disabled class="inline-flex items-center justify-center rounded-lg bg-slate-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm cursor-not-allowed" title="Siswa harus melengkapi NIS terlebih dahulu">Validasi & Tempatkan</button>
+                                        @else
+                                            <button wire:click="openValidateStudentModal({{ $student->id }})" class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Validasi & Tempatkan</button>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

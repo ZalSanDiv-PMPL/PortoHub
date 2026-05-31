@@ -49,8 +49,8 @@
 
                     <!-- Author -->
                     <div class="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
-                        <div class="h-11 w-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg">
-                            {{ substr($project->student->user->name ?? '?', 0, 1) }}
+                        <div class="h-11 w-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg overflow-hidden">
+                            <x-avatar :url="$project->student->user->avatar_url" :name="$project->student->user->name" />
                         </div>
                         <div>
                             <p class="font-semibold text-slate-900 group-hover:text-blue-600 transition">

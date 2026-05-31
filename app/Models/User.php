@@ -10,12 +10,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'password_set_at', 'role', 'is_active', 'last_login_at'])]
+#[Fillable(['name', 'email', 'password', 'password_set_at', 'role', 'is_active', 'last_login_at', 'avatar_path'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $with = ['githubToken'];
+    protected $appends = ['avatar_url'];
 
     /**
      * Get the attributes that should be cast.
@@ -64,5 +67,18 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar_path) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path);
+        }
+
+        if ($this->githubToken && $this->githubToken->github_username) {
+            return 'https://github.com/' . $this->githubToken->github_username . '.png';
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=4F46E5&background=E0E7FF';
     }
 }

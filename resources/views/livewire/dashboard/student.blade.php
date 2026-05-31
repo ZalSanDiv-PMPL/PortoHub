@@ -409,15 +409,31 @@ new class extends Component {
         @endif
     </div>
 
-    @if(auth()->user()->student && !auth()->user()->student->is_validated)
+    @if(auth()->user()->student && empty(auth()->user()->student->nis))
+    <!-- NIS Warning Banner -->
+    <div class="mb-8 p-4 rounded-xl bg-amber-50/80 backdrop-blur-md border border-amber-200 text-amber-800 flex items-start sm:items-center justify-between">
+        <div class="flex items-start sm:items-center">
+            <svg class="w-6 h-6 mr-3 flex-shrink-0 text-amber-600 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <h4 class="font-bold text-sm">Data Akademik Belum Lengkap</h4>
+                <p class="text-sm mt-1 sm:mt-0">Admin tidak dapat memvalidasi akun Anda jika NIS kosong. Mohon lengkapi Data Akademik Anda di pengaturan profil.</p>
+            </div>
+        </div>
+        <a href="{{ route('profile') }}" class="ml-4 inline-flex items-center justify-center rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-500 whitespace-nowrap">
+            Isi NIS Sekarang
+        </a>
+    </div>
+    @elseif(auth()->user()->student && !auth()->user()->student->is_validated)
     <!-- Validation Warning Banner -->
-    <div class="mb-8 p-4 rounded-xl bg-amber-50/80 backdrop-blur-md border border-amber-200 text-amber-800 flex items-start sm:items-center">
-        <svg class="w-6 h-6 mr-3 flex-shrink-0 text-amber-600 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    <div class="mb-8 p-4 rounded-xl bg-blue-50/80 backdrop-blur-md border border-blue-200 text-blue-800 flex items-start sm:items-center">
+        <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-600 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
             <h4 class="font-bold text-sm">Akun Anda sedang dalam peninjauan.</h4>
-            <p class="text-sm mt-1 sm:mt-0">Admin sekolah perlu menyetujui akun Anda dan menempatkan Anda ke dalam kelas sebelum Anda bisa mengirimkan proyek portofolio.</p>
+            <p class="text-sm mt-1 sm:mt-0">Data Anda sudah lengkap. Admin sekolah perlu menyetujui akun Anda dan menempatkan Anda ke dalam kelas sebelum Anda bisa mengirimkan proyek portofolio.</p>
         </div>
     </div>
     @endif
@@ -844,8 +860,8 @@ new class extends Component {
                                     <div class="rounded-xl p-3.5 border {{ $comment['is_pinned'] ? 'bg-amber-50/60 border-amber-200/60 ring-1 ring-amber-100' : 'bg-white border-slate-200/60' }}">
                                         <div class="flex items-start justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
-                                                <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">
-                                                    {{ substr($comment['teacher']['user']['name'] ?? '?', 0, 1) }}
+                                                <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0 overflow-hidden">
+                                                    <x-avatar :url="$comment['teacher']['user']['avatar_url'] ?? null" :name="$comment['teacher']['user']['name'] ?? 'Guru'" />
                                                 </div>
                                                 <div class="min-w-0">
                                                     <span class="text-xs font-semibold text-slate-900">{{ $comment['teacher']['user']['name'] ?? 'Guru' }}</span>
