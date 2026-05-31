@@ -18,7 +18,7 @@ class ProjectFactory extends Factory
             'description' => $this->faker->paragraph(3),
             'thumbnail_path' => null,
             'development_model' => $this->faker->randomElement(['waterfall', 'agile', 'other']),
-            'github_url' => 'https://github.com/' . $this->faker->userName() . '/' . $this->faker->slug(2),
+            'github_url' => 'https://github.com/'.$this->faker->userName().'/'.$this->faker->slug(2),
             'status' => 'submitted',
             'visibility' => 'public',
             'tech_stack' => null,

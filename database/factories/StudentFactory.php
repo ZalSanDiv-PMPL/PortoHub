@@ -13,7 +13,7 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->state(['role' => 'student']),
             'nis' => $this->faker->numerify('##########'),
             'year' => $this->faker->randomElement([2024, 2025, 2026]),
             'phone' => $this->faker->phoneNumber(),
@@ -24,6 +24,6 @@ class StudentFactory extends Factory
 
     public function unvalidated(): static
     {
-        return $this->state(fn () => ['is_validated' => false]);
+        return $this->state(fn() => ['is_validated' => false]);
     }
 }

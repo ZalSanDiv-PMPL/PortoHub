@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\GithubToken;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\GithubToken;
 
 class RefreshGithubTokensCommand extends Command
 {
@@ -37,6 +37,7 @@ class RefreshGithubTokensCommand extends Command
 
         if ($tokensToRefresh->isEmpty()) {
             $this->info('No tokens require refreshing at this time.');
+
             return Command::SUCCESS;
         }
 
@@ -54,9 +55,10 @@ class RefreshGithubTokensCommand extends Command
                     'refresh_token' => $token->refresh_token,
                 ]);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     $this->error("  HTTP error: {$response->status()}");
                     $failCount++;
+
                     continue;
                 }
 
@@ -65,22 +67,24 @@ class RefreshGithubTokensCommand extends Command
                 parse_str($body, $data);
 
                 if (isset($data['error'])) {
-                    $this->error("  GitHub error: {$data['error']} — " . ($data['error_description'] ?? ''));
+                    $this->error("  GitHub error: {$data['error']} — ".($data['error_description'] ?? ''));
                     Log::warning("GitHub token refresh failed for user {$token->user_id}: {$data['error']}");
 
                     // If the refresh token is invalid, deactivate
                     if ($data['error'] === 'bad_refresh_token') {
                         $token->update(['is_active' => false]);
-                        $this->warn("  Token deactivated due to invalid refresh token.");
+                        $this->warn('  Token deactivated due to invalid refresh token.');
                     }
 
                     $failCount++;
+
                     continue;
                 }
 
-                if (!isset($data['access_token'])) {
-                    $this->error("  No access_token in response.");
+                if (! isset($data['access_token'])) {
+                    $this->error('  No access_token in response.');
                     $failCount++;
+
                     continue;
                 }
 
@@ -94,11 +98,11 @@ class RefreshGithubTokensCommand extends Command
                     'refreshed_at' => now(),
                 ]);
 
-                $this->info("  ✓ Token refreshed successfully.");
+                $this->info('  ✓ Token refreshed successfully.');
                 $successCount++;
 
             } catch (\Exception $e) {
-                Log::error("GitHub token refresh exception for user {$token->user_id}: " . $e->getMessage());
+                Log::error("GitHub token refresh exception for user {$token->user_id}: ".$e->getMessage());
                 $this->error("  ✗ Exception: {$e->getMessage()}");
                 $failCount++;
             }

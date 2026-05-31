@@ -2,10 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\ClassAssignment;
+use App\Models\GithubToken;
 use App\Models\Student;
+use App\Models\Teacher;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -29,7 +33,7 @@ class DatabaseSeeder extends Seeder
 
         // Akun Testing Khusus (Tupai Kidal)
         $tupaiUser = User::updateOrCreate([
-            'email' => 'tupaikidal',
+            'email' => 'tupaikidal@portohub.test',
         ], [
             'name' => 'Tupai Kidal',
             'role' => 'student',
@@ -48,12 +52,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        \App\Models\GithubToken::updateOrCreate(
+        GithubToken::updateOrCreate(
             ['user_id' => $tupaiUser->id],
             [
                 'github_id' => 99999999,
                 'github_username' => 'tupaikidal-dev',
-                'access_token' => 'dummy_token_' . \Illuminate\Support\Str::random(10),
+                'access_token' => 'dummy_token_'.Str::random(10),
                 'is_active' => true,
             ]
         );
@@ -63,14 +67,14 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Hubungkan Tupai Kidal ke kelas yang diajar oleh Pak Hendra
-        $teacher = \App\Models\Teacher::whereHas('user', function($q) {
+        $teacher = Teacher::whereHas('user', function ($q) {
             $q->where('email', 'hendra.rpl@portohub.test');
         })->first();
 
         $tupaiStudent = Student::where('nis', '2026099')->first();
 
         if ($teacher && $tupaiStudent) {
-            \App\Models\ClassAssignment::updateOrCreate(
+            ClassAssignment::updateOrCreate(
                 [
                     'teacher_id' => $teacher->id,
                     'student_id' => $tupaiStudent->id,

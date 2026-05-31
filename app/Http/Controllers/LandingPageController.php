@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
+
 class LandingPageController extends Controller
 {
     public function index()
     {
-        $featuredProjects = \App\Models\Project::query()
-            ->with('student.user')
+        $featuredProjects = Project::query()
+            ->with('student.user.githubToken')
             ->where('status', 'approved')
             ->publiclyVisible()
             ->orderByDesc('approval_date')

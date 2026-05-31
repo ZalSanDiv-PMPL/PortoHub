@@ -6,7 +6,6 @@ use App\Models\Comment;
 use App\Models\Project;
 use App\Models\Student;
 use App\Models\Teacher;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

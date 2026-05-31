@@ -13,7 +13,7 @@ class TeacherFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->state(['role' => 'teacher']),
             'nip' => $this->faker->numerify('##################'),
             'specialization' => $this->faker->randomElement(['Pemrograman Web', 'Basis Data', 'Mobile Development', 'Jaringan Komputer']),
             'department' => 'Rekayasa Perangkat Lunak',

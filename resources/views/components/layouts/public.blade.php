@@ -21,7 +21,7 @@
     </a>
 
     <!-- Navbar -->
-    @include('landing.partials.header')
+    <livewire:layout.navigation />
 
     <main id="main-content" class="min-h-screen">
         {{ $slot }}

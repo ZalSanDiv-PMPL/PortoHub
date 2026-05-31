@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\GithubMetadata;
 use App\Models\Project;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 class SyncGithubMetadataCommand extends Command
 {
     protected $signature = 'github:sync-metadata {--project= : Sync a specific project ID}';
+
     protected $description = 'Sinkronisasi metadata GitHub (commit, bahasa, stars, forks) untuk proyek yang terhubung.';
 
     public function handle()
@@ -30,6 +32,7 @@ class SyncGithubMetadataCommand extends Command
 
         if ($projects->isEmpty()) {
             $this->info('Tidak ada proyek yang perlu disinkronisasi.');
+
             return 0;
         }
 
@@ -40,15 +43,16 @@ class SyncGithubMetadataCommand extends Command
 
         foreach ($projects as $project) {
             $token = $project->student->user->githubToken;
-            if (!$token || !$token->access_token) {
+            if (! $token || ! $token->access_token) {
                 continue;
             }
 
             // Parse owner/repo from github_url
             $parsed = $this->parseGithubUrl($project->github_url);
-            if (!$parsed) {
+            if (! $parsed) {
                 $this->warn("URL tidak valid: {$project->github_url}");
                 $errors++;
+
                 continue;
             }
 
@@ -60,9 +64,10 @@ class SyncGithubMetadataCommand extends Command
                     ->withHeaders(['Accept' => 'application/vnd.github.v3+json'])
                     ->get("https://api.github.com/repos/{$owner}/{$repo}");
 
-                if (!$repoResponse->successful()) {
+                if (! $repoResponse->successful()) {
                     $this->warn("Gagal ambil repo {$owner}/{$repo}: {$repoResponse->status()}");
                     $errors++;
+
                     continue;
                 }
 
@@ -81,10 +86,10 @@ class SyncGithubMetadataCommand extends Command
 
                 if ($commitResponse->successful()) {
                     $commits = $commitResponse->json();
-                    if (!empty($commits[0])) {
+                    if (! empty($commits[0])) {
                         $lastCommitMessage = $commits[0]['commit']['message'] ?? null;
-                        $lastCommitAt = isset($commits[0]['commit']['committer']['date']) 
-                            ? \Carbon\Carbon::parse($commits[0]['commit']['committer']['date'])->format('Y-m-d H:i:s') 
+                        $lastCommitAt = isset($commits[0]['commit']['committer']['date'])
+                            ? Carbon::parse($commits[0]['commit']['committer']['date'])->format('Y-m-d H:i:s')
                             : null;
                     }
 
@@ -111,7 +116,7 @@ class SyncGithubMetadataCommand extends Command
                 $createdAt = $repoData['created_at'] ?? null;
                 $commitFrequency = null;
                 if ($createdAt && $commitCount > 0) {
-                    $weeks = max(1, now()->diffInWeeks(\Carbon\Carbon::parse($createdAt)));
+                    $weeks = max(1, now()->diffInWeeks(Carbon::parse($createdAt)));
                     $commitFrequency = round($commitCount / $weeks, 1);
                 }
 
@@ -129,27 +134,28 @@ class SyncGithubMetadataCommand extends Command
                         'language' => $repoData['language'] ?? null,
                         'stars' => $repoData['stargazers_count'] ?? 0,
                         'forks' => $repoData['forks_count'] ?? 0,
-                        'is_public' => !($repoData['private'] ?? true),
+                        'is_public' => ! ($repoData['private'] ?? true),
                         'last_synced_at' => now(),
                     ]
                 );
 
                 // Update project tech_stack
-                if (!empty($techStack)) {
+                if (! empty($techStack)) {
                     $project->update(['tech_stack' => $techStack]);
                 }
 
                 $synced++;
-                $this->line("  ✓ {$project->title} ({$owner}/{$repo}) — {$commitCount} commits, " . implode(', ', $techStack));
+                $this->line("  ✓ {$project->title} ({$owner}/{$repo}) — {$commitCount} commits, ".implode(', ', $techStack));
 
             } catch (\Exception $e) {
-                Log::error("GitHub sync error for project {$project->id}: " . $e->getMessage());
+                Log::error("GitHub sync error for project {$project->id}: ".$e->getMessage());
                 $this->error("  ✗ {$project->title}: {$e->getMessage()}");
                 $errors++;
             }
         }
 
         $this->info("Selesai: {$synced} berhasil, {$errors} gagal.");
+
         return 0;
     }
 
@@ -159,6 +165,7 @@ class SyncGithubMetadataCommand extends Command
         if (preg_match('#github\.com/([^/]+)/([^/\.]+)#', $url, $matches)) {
             return [$matches[1], $matches[2]];
         }
+
         return null;
     }
 }

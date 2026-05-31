@@ -2,16 +2,20 @@
 
 namespace App\Livewire\Public;
 
-use Livewire\Component;
-use App\Models\Student;
 use App\Models\Project;
+use App\Models\Student;
+use Livewire\Component;
 
 class StudentProfile extends Component
 {
     public $studentId;
+
     public $student;
+
     public $projects = [];
+
     public $topSkills = [];
+
     public $stats = [
         'total_projects' => 0,
         'total_commits' => 0,
@@ -21,8 +25,8 @@ class StudentProfile extends Component
     public function mount($id)
     {
         $this->studentId = $id;
-        
-        $this->student = Student::with(['user', 'classAssignments'])->findOrFail($id);
+
+        $this->student = Student::with(['user.githubToken', 'classAssignments'])->findOrFail($id);
 
         $this->projects = Project::where('student_id', $id)
             ->publiclyVisible()
@@ -37,7 +41,7 @@ class StudentProfile extends Component
     private function calculateStats()
     {
         $this->stats['total_projects'] = $this->projects->count();
-        
+
         $totalCommits = 0;
         $totalScore = 0;
         $scoreCount = 0;
@@ -51,18 +55,18 @@ class StudentProfile extends Component
 
             // Scores
             if ($project->validation) {
-                $avg = ($project->validation->functionality_score + 
-                        $project->validation->code_quality_score + 
-                        $project->validation->documentation_score + 
+                $avg = ($project->validation->functionality_score +
+                        $project->validation->code_quality_score +
+                        $project->validation->documentation_score +
                         $project->validation->originality_score) / 4;
                 $totalScore += $avg;
                 $scoreCount++;
             }
 
             // Tech Stack
-            if (!empty($project->tech_stack) && is_array($project->tech_stack)) {
+            if (! empty($project->tech_stack) && is_array($project->tech_stack)) {
                 foreach ($project->tech_stack as $tech) {
-                    if (!isset($techCount[$tech])) {
+                    if (! isset($techCount[$tech])) {
                         $techCount[$tech] = 0;
                     }
                     $techCount[$tech]++;

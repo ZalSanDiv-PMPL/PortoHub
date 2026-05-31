@@ -17,7 +17,7 @@ class ClassAssignmentFactory extends Factory
             'student_id' => Student::factory(),
             'teacher_id' => Teacher::factory(),
             'class' => $this->faker->randomElement(['XII RPL 1', 'XII RPL 2', 'XI RPL 1', 'XI RPL 2']),
-            'semester' => $this->faker->randomElement(['Ganjil 2025/2026', 'Genap 2025/2026']),
+            'semester' => $this->faker->randomElement([1, 2]),
             'is_active' => true,
         ];
     }

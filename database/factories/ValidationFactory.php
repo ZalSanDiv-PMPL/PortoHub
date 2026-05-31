@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Validation;
 use App\Models\Project;
 use App\Models\Teacher;
+use App\Models\Validation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ValidationFactory extends Factory

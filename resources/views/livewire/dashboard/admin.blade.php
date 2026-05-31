@@ -178,19 +178,7 @@ new class extends Component {
         </div>
     </x-glass-card>
 
-    <!-- Flash Messages -->
-    @if (session()->has('success'))
-        <div class="mb-6 p-4 rounded-xl bg-emerald-50/80 backdrop-blur-md border border-emerald-100 text-emerald-700 flex items-center">
-            <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            {{ session('success') }}
-        </div>
-    @endif
-    @if (session()->has('error'))
-        <div class="mb-6 p-4 rounded-xl bg-rose-50/80 backdrop-blur-md border border-rose-100 text-rose-700 flex items-center">
-            <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            {{ session('error') }}
-        </div>
-    @endif
+
 
     <!-- TAB 1: OVERVIEW -->
     @if($currentTab === 'overview')
