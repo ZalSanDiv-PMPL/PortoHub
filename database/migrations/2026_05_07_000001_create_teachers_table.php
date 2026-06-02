@@ -6,23 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  public function up(): void
-  {
-    Schema::create('teachers', function (Blueprint $table) {
-      $table->id();
-      $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
-      $table->string('nip')->unique();
-      $table->string('specialization');
-      $table->string('department');
-      $table->string('phone')->nullable();
-      $table->text('address')->nullable();
-      $table->boolean('is_validated')->default(false);
-      $table->timestamps();
-    });
-  }
+    public function up(): void
+    {
+        Schema::create('teachers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+            $table->string('nip')->unique();
+            $table->string('specialization');
+            $table->string('department');
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
+            $table->boolean('is_validated')->default(false);
+            $table->timestamps();
+        });
+    }
 
-  public function down(): void
-  {
-    Schema::dropIfExists('teachers');
-  }
+    public function down(): void
+    {
+        Schema::dropIfExists('teachers');
+    }
 };

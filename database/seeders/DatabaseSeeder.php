@@ -2,9 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\ClassAssignment;
+use App\Models\GithubToken;
+use App\Models\Student;
+use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,27 +20,71 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Admin User
         User::updateOrCreate([
-            'email' => 'test@example.com',
+            'email' => 'admin@portohub.local',
         ], [
-            'name' => 'Test User',
-            'password' => 'password',
+            'name' => 'Admin PortoHub',
+            'role' => 'admin',
+            'password' => env('SEED_ADMIN_PASSWORD', 'password'),
             'password_set_at' => now(),
+            'email_verified_at' => now(),
         ]);
 
-        User::updateOrCreate([
-            'email' => 'tupaikidal',
+        // Akun Testing Khusus (Tupai Kidal)
+        $tupaiUser = User::updateOrCreate([
+            'email' => 'tupaikidal@portohub.test',
         ], [
             'name' => 'Tupai Kidal',
             'role' => 'student',
-            'password' => 'Kambingguling_001',
+            'password' => env('SEED_TEST_PASSWORD', 'password'),
             'password_set_at' => now(),
         ]);
+
+        Student::updateOrCreate(
+            ['user_id' => $tupaiUser->id],
+            [
+                'nis' => '2026099',
+                'year' => 2024,
+                'phone' => '08129999999',
+                'address' => 'Jakarta, Indonesia',
+                'is_validated' => true,
+            ]
+        );
+
+        GithubToken::updateOrCreate(
+            ['user_id' => $tupaiUser->id],
+            [
+                'github_id' => 99999999,
+                'github_username' => 'tupaikidal-dev',
+                'access_token' => 'dummy_token_'.Str::random(10),
+                'is_active' => true,
+            ]
+        );
 
         $this->call([
             DemoPortfolioSeeder::class,
         ]);
+
+        // Hubungkan Tupai Kidal ke kelas yang diajar oleh Pak Hendra
+        $teacher = Teacher::whereHas('user', function ($q) {
+            $q->where('email', 'hendra.rpl@portohub.test');
+        })->first();
+
+        $tupaiStudent = Student::where('nis', '2026099')->first();
+
+        if ($teacher && $tupaiStudent) {
+            ClassAssignment::updateOrCreate(
+                [
+                    'teacher_id' => $teacher->id,
+                    'student_id' => $tupaiStudent->id,
+                    'class' => 'X RPL B',
+                    'semester' => 2,
+                ],
+                [
+                    'is_active' => true,
+                ]
+            );
+        }
     }
 }

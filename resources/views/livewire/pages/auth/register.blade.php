@@ -29,11 +29,22 @@ new #[Layout('layouts.auth-split')] class extends Component
         $validated['password'] = Hash::make($validated['password']);
         $validated['password_set_at'] = now();
 
-        event(new Registered($user = User::create($validated)));
+        $user = User::create($validated);
+        $user->refresh();
+        
+        if ($user->role === 'student') {
+            \App\Models\Student::create([
+                'user_id' => $user->id,
+                'nis' => null,
+                'year' => null,
+            ]);
+        }
+
+        event(new Registered($user));
 
         Auth::login($user);
 
-        $this->redirect(route('home', absolute: false), navigate: true);
+        $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
 }; ?>
 

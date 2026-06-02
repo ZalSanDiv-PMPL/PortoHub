@@ -26,25 +26,40 @@
 
         <div class="relative">
             <div class="grid grid-cols-2 gap-4">
+                @php
+                    $aspectRatios = ['aspect-[4/5]', 'aspect-square', 'aspect-video', 'aspect-[3/4]'];
+                    $defaultImages = [
+                        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop',
+                        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&auto=format&fit=crop',
+                        'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=600&auto=format&fit=crop',
+                        'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop'
+                    ];
+                @endphp
                 <div class="space-y-4 translate-y-8">
-                    <div class="rounded-xl bg-white p-2 shadow-xl shadow-slate-200/50">
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop" alt="Project 1" class="w-full rounded-lg object-cover aspect-[4/5]" />
-                        <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1">Dasbor Teknologi</p>
-                    </div>
-                    <div class="rounded-xl bg-white p-2 shadow-xl shadow-slate-200/50">
-                        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&auto=format&fit=crop" alt="Project 2" class="w-full rounded-lg object-cover aspect-square" />
-                        <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1">E-Commerce Berbasis AI</p>
-                    </div>
+                    @for($i = 0; $i < 2; $i++)
+                        @php $proj = $featuredProjects[$i] ?? null; @endphp
+                        <div class="rounded-xl bg-white p-2 shadow-xl shadow-slate-200/50">
+                            @if($proj && $proj->thumbnail_path)
+                                <img src="{{ asset('storage/' . $proj->thumbnail_path) }}" alt="{{ $proj->title }}" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
+                            @else
+                                <img src="{{ $defaultImages[$i] }}" alt="Placeholder" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
+                            @endif
+                            <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1 truncate" title="{{ $proj ? $proj->title : 'Proyek Kosong' }}">{{ $proj ? $proj->title : 'Menunggu Proyek...' }}</p>
+                        </div>
+                    @endfor
                 </div>
                 <div class="space-y-4 -translate-y-4">
-                    <div class="rounded-xl bg-white p-2 shadow-xl shadow-slate-200/50">
-                        <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=600&auto=format&fit=crop" alt="Project 3" class="w-full rounded-lg object-cover aspect-video" />
-                        <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1">Pelacak Kebiasaan</p>
-                    </div>
-                    <div class="rounded-xl bg-white p-2 shadow-xl shadow-slate-200/50">
-                        <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop" alt="Project 4" class="w-full rounded-lg object-cover aspect-[3/4]" />
-                        <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1">Pelacak Kesehatan</p>
-                    </div>
+                    @for($i = 2; $i < 4; $i++)
+                        @php $proj = $featuredProjects[$i] ?? null; @endphp
+                        <div class="rounded-xl bg-white p-2 shadow-xl shadow-slate-200/50">
+                            @if($proj && $proj->thumbnail_path)
+                                <img src="{{ asset('storage/' . $proj->thumbnail_path) }}" alt="{{ $proj->title }}" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
+                            @else
+                                <img src="{{ $defaultImages[$i] }}" alt="Placeholder" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
+                            @endif
+                            <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1 truncate" title="{{ $proj ? $proj->title : 'Proyek Kosong' }}">{{ $proj ? $proj->title : 'Menunggu Proyek...' }}</p>
+                        </div>
+                    @endfor
                 </div>
             </div>
         </div>

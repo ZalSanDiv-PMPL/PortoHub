@@ -6,6 +6,7 @@ use App\Models\ClassAssignment;
 use App\Models\Comment;
 use App\Models\Documentation;
 use App\Models\GithubMetadata;
+use App\Models\GithubToken;
 use App\Models\Project;
 use App\Models\ProjectUrl;
 use App\Models\Student;
@@ -13,6 +14,7 @@ use App\Models\Teacher;
 use App\Models\User;
 use App\Models\Validation;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DemoPortfolioSeeder extends Seeder
 {
@@ -25,6 +27,7 @@ class DemoPortfolioSeeder extends Seeder
             ['email' => 'hendra.rpl@portohub.test'],
             [
                 'name' => 'Pak Hendra',
+                'role' => 'teacher',
                 'password' => 'password',
                 'password_set_at' => now(),
                 'email_verified_at' => now(),
@@ -111,6 +114,7 @@ class DemoPortfolioSeeder extends Seeder
                 ['email' => $studentData['email']],
                 [
                     'name' => $studentData['name'],
+                    'role' => 'student',
                     'password' => 'password',
                     'password_set_at' => now(),
                     'email_verified_at' => now(),
@@ -121,12 +125,20 @@ class DemoPortfolioSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'nis' => $studentData['nis'],
-                    'class' => $studentData['class'],
                     'year' => 2024,
-                    'phone' => '0812' . substr($studentData['nis'], -6),
+                    'phone' => '0812'.substr($studentData['nis'], -6),
                     'address' => 'Malang, Jawa Timur',
-                    'github_username' => $studentData['github_username'],
                     'is_validated' => true,
+                ]
+            );
+
+            GithubToken::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'github_id' => rand(1000000, 9999999),
+                    'github_username' => $studentData['github_username'],
+                    'access_token' => 'dummy_token_'.Str::random(10),
+                    'is_active' => true,
                 ]
             );
 
@@ -164,7 +176,7 @@ class DemoPortfolioSeeder extends Seeder
                     'url_type' => 'live_demo',
                 ],
                 [
-                    'url' => 'https://demo.portohub.test/' . $studentData['title'],
+                    'url' => 'https://demo.portohub.test/'.$studentData['title'],
                     'description' => 'Live demo proyek',
                     'is_public' => true,
                 ]
@@ -176,7 +188,7 @@ class DemoPortfolioSeeder extends Seeder
                     'url_type' => 'documentation',
                 ],
                 [
-                    'url' => 'https://docs.portohub.test/' . $studentData['title'],
+                    'url' => 'https://docs.portohub.test/'.$studentData['title'],
                     'description' => 'Dokumentasi proyek',
                     'is_public' => true,
                 ]
@@ -185,11 +197,11 @@ class DemoPortfolioSeeder extends Seeder
             Documentation::updateOrCreate(
                 [
                     'project_id' => $project->id,
-                    'file_name' => $studentData['title'] . ' Guide.pdf',
+                    'file_name' => $studentData['title'].' Guide.pdf',
                 ],
                 [
                     'doc_type' => 'pdf',
-                    'file_path' => 'docs/' . str($studentData['title'])->slug('-') . '-guide.pdf',
+                    'file_path' => 'docs/'.str($studentData['title'])->slug('-').'-guide.pdf',
                     'file_size' => 2048000,
                     'mime_type' => 'application/pdf',
                     'description' => 'Panduan implementasi dan penggunaan proyek.',

@@ -7,15 +7,19 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'password_set_at', 'role', 'is_active', 'last_login_at'])]
+#[Fillable(['name', 'email', 'password', 'password_set_at', 'role', 'is_active', 'last_login_at', 'avatar_path'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $appends = ['avatar_url'];
 
     /**
      * Get the attributes that should be cast.
@@ -27,21 +31,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password_set_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
-    public function teacher()
+    public function teacher(): HasOne
     {
         return $this->hasOne(Teacher::class);
     }
 
-    public function student()
+    public function student(): HasOne
     {
         return $this->hasOne(Student::class);
     }
 
-    public function githubToken()
+    public function githubToken(): HasOne
     {
         return $this->hasOne(GithubToken::class);
     }
@@ -64,5 +69,18 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar_path) {
+            return Storage::disk('public')->url($this->avatar_path);
+        }
+
+        if ($this->relationLoaded('githubToken') && $this->githubToken && $this->githubToken->github_username) {
+            return 'https://github.com/'.$this->githubToken->github_username.'.png';
+        }
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=4F46E5&background=E0E7FF';
     }
 }
