@@ -165,7 +165,7 @@ Sebagian besar akun memiliki password *default*: **`password`** (kecuali ditanda
 
 | Role | Nama / Identitas | Email / Username Login | Password | Status Skenario |
 | :--- | :--- | :--- | :--- | :--- |
-| **Admin** | Admin PortoHub | `admin@portohub.local` / `admin-portohub` | `password` | Admin pusat. |
+| **Admin** | Admin PortoHub | `admin@portohub.local` / `admin` | `password` | Admin pusat. |
 | **Teacher** | Pak Hendra | `hendra.rpl@portohub.test` / `pak-hendra` | `password` | Guru RPL, memiliki kelas X RPL B & XI RPL A. |
 | **Teacher** | Bu Dina | `dina.tkj@portohub.test` / `bu-dina` | `password` | Guru TKJ, memvalidasi proyek jurusan TKJ. |
 | **Student** | Wafi Saputra | `wafi@portohub.test` / `wafi-saputra` | `password` | Siswa tervalidasi. Memiliki proyek berstatus **Approved**. |

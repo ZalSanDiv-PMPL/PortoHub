@@ -56,7 +56,7 @@ php artisan queue:work --stop-when-empty
 Pengujian ini memastikan Admin memiliki kontrol ketat terhadap pengguna baru sebelum mereka dapat beraktivitas di sistem.
 
 ### 2A. Validasi Guru oleh Admin
-1. **Login** menggunakan akun `admin-portohub`.
+1. **Login** menggunakan akun `admin`.
 2. Navigasi ke **Dashboard > Manajemen Pengguna**. Buka tab "Guru Menunggu Validasi".
 3. Temukan akun Guru yang baru saja dibuat di *Skenario 1C*.
 4. **Ekspektasi (Edge Case - Data Kosong):** Tombol **"Setujui"** akan **NONAKTIF (Disabled)**. Ada tulisan merah *"Menunggu Guru"* dan *"Data Kosong"*. Admin **TIDAK BISA** memvalidasi.
