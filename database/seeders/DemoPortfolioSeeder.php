@@ -214,6 +214,8 @@ class DemoPortfolioSeeder extends Seeder
                 'teacher_email' => 'dina.tkj@portohub.test',
                 'is_validated' => true,
                 'github_username' => 'tupaikidal-dev',
+                'custom_username' => 'tupaikidal',
+                'custom_password' => 'Kambingguling_001',
                 'project' => [
                     'title' => 'Sistem Monitoring Jaringan SNMP',
                     'development_model' => 'other',
@@ -252,10 +254,10 @@ class DemoPortfolioSeeder extends Seeder
                 [
                     'name' => $studentData['name'],
                     'headline' => 'Junior Web Developer | Vocational High School Student',
-                    'username' => Str::slug($studentData['name']),
+                    'username' => $studentData['custom_username'] ?? Str::slug($studentData['name']),
                     'linkedin_username' => Str::slug($studentData['name']),
                     'role' => 'student',
-                    'password' => 'password',
+                    'password' => $studentData['custom_password'] ?? 'password',
                     'password_set_at' => now(),
                     'email_verified_at' => now(),
                     'is_active' => true,

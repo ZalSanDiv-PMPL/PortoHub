@@ -151,17 +151,19 @@ Karena aplikasi sangat bergantung pada *Queue* dan sinkronisasi GitHub:
 
 ## 🔐 Akun Testing (Demo Seeders)
 
-Ketika Anda menjalankan `php artisan migrate:fresh --seed`, sistem otomatis membuat beberapa akun dengan tingkatan *role* yang berbeda untuk keperluan *testing* fungsionalitas. **Semua password akun adalah: `password`**
+Ketika Anda menjalankan `php artisan migrate:fresh --seed`, sistem otomatis membuat beberapa akun dengan tingkatan *role* yang berbeda untuk keperluan *testing* fungsionalitas. Anda dapat login menggunakan **Email** ataupun **Username**.
 
-| Role | Nama / Identitas | Email Login | Status Skenario |
-| :--- | :--- | :--- | :--- |
-| **Admin** | Admin PortoHub | `admin@portohub.local` | Admin pusat. |
-| **Teacher** | Pak Hendra | `hendra.rpl@portohub.test` | Guru RPL, memiliki kelas X RPL B & XI RPL A. |
-| **Teacher** | Bu Dina | `dina.tkj@portohub.test` | Guru TKJ, memvalidasi proyek jurusan TKJ. |
-| **Student** | Wafi Saputra | `wafi@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Approved**. |
-| **Student** | Nabila Putri | `nabila@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Under Review**. |
-| **Student** | Tupai Kidal | `tupaikidal@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Rejected**. |
-| **Student** | Roni Pratama | `roni@portohub.test` | Siswa **belum** divalidasi oleh Admin. |
+Sebagian besar akun memiliki password *default*: **`password`** (kecuali ditandai khusus).
+
+| Role | Nama / Identitas | Email / Username Login | Password | Status Skenario |
+| :--- | :--- | :--- | :--- | :--- |
+| **Admin** | Admin PortoHub | `admin@portohub.local` / `admin-portohub` | `password` | Admin pusat. |
+| **Teacher** | Pak Hendra | `hendra.rpl@portohub.test` / `pak-hendra` | `password` | Guru RPL, memiliki kelas X RPL B & XI RPL A. |
+| **Teacher** | Bu Dina | `dina.tkj@portohub.test` / `bu-dina` | `password` | Guru TKJ, memvalidasi proyek jurusan TKJ. |
+| **Student** | Wafi Saputra | `wafi@portohub.test` / `wafi-saputra` | `password` | Siswa tervalidasi. Memiliki proyek berstatus **Approved**. |
+| **Student** | Nabila Putri | `nabila@portohub.test` / `nabila-putri` | `password` | Siswa tervalidasi. Memiliki proyek berstatus **Under Review**. |
+| **Student** | Tupai Kidal | `tupaikidal@portohub.test` / `tupaikidal` | **`Kambingguling_001`** | Siswa tervalidasi. Memiliki proyek berstatus **Rejected**. |
+| **Student** | Roni Pratama | `roni@portohub.test` / `roni-pratama` | `password` | Siswa **belum** divalidasi oleh Admin. |
 
 Gunakan akun-akun di atas untuk mencoba alur persetujuan proyek dan interaksi (komentar) antara Guru dan Siswa.
 
