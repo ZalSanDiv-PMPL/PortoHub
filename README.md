@@ -1,49 +1,56 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+    <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo">
 </p>
 
 # PortoHub
 
-PortoHub adalah aplikasi web berbasis Laravel 13, Livewire, dan Vite.
+**PortoHub** adalah aplikasi web manajemen dan pameran (*showcase*) portofolio siswa yang dikembangkan untuk mempermudah proses validasi karya siswa oleh guru dan menampilkannya sebagai galeri publik. Aplikasi ini dibangun dengan stack modern menggunakan Laravel 11, Livewire Volt, dan Tailwind CSS (mengusung desain modern berbasis *Glassmorphism*).
 
-## Prasyarat
+## ✨ Fitur Utama
 
-- PHP 8.3+
-- Composer
-- Node.js (LTS) dan npm
-- Database: MySQL/MariaDB atau SQLite
+- **Sistem Role Berlapis**: Admin (validasi pengguna), Guru (validasi proyek & siswa), dan Siswa (mengajukan proyek).
+- **Integrasi GitHub API**: Otomatis menarik metadata repositori (jumlah *commit*, waktu *commit* terakhir, bahasa pemrograman) milik siswa.
+- **Sistem Penilaian & Validasi**: Guru dapat memberikan skor dan catatan/masukan perbaikan untuk setiap proyek.
+- **Galeri Portofolio Publik**: Karya siswa yang sudah divalidasi akan otomatis tampil di halaman galeri publik.
+- **Sistem Notifikasi Real-time & Latar Belakang**: Dilengkapi *Queue Worker* untuk memproses notifikasi interaktif (pesan/komentar) secara mulus.
 
-## Cara Clone Sampai Jalan (Development)
+---
 
-1) Clone repo dan masuk ke folder proyek
+## 💻 Prasyarat Sistem
 
+Pastikan environment Anda sudah memiliki:
+- **PHP 8.3** atau lebih baru
+- **Composer**
+- **Node.js** (LTS) & **NPM**
+- **Database**: MySQL/MariaDB (disarankan) atau SQLite
+
+---
+
+## 🚀 Panduan Setup (Instalasi Lengkap)
+
+Ikuti langkah-langkah di bawah ini untuk menjalankan PortoHub di lingkungan pengembangan (*development*) Anda.
+
+### 1. Clone & Install Dependencies
 ```bash
 git clone https://github.com/ZalSanDiv-PMPL/PortoHub.git
 cd PortoHub
-```
 
-2) Install dependency PHP
-
-```bash
+# Install dependensi PHP
 composer install
+
+# Install dependensi Frontend
+npm install
 ```
 
-3) Salin file environment dan generate app key
-
+### 2. Setup Environment
+Salin file konfigurasi bawaan dan *generate* kunci aplikasi:
 ```bash
-copy .env.example .env
+copy .env.example .env      # (Gunakan 'cp' jika di Mac/Linux)
 php artisan key:generate
 ```
 
-4) Konfigurasi database di file `.env`
-
-Contoh MySQL:
-
+Buka file `.env` dan atur koneksi *database* sesuai sistem Anda.
+Contoh untuk MySQL:
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -52,128 +59,77 @@ DB_DATABASE=portohub
 DB_USERNAME=root
 DB_PASSWORD=
 ```
+*(Catatan: Buat database kosong bernama `portohub` di MySQL Anda terlebih dahulu)*
 
-5) Jalankan migrasi
-
+### 3. Setup File Storage & Database Seeders
+Aplikasi menggunakan sistem upload (avatar & dokumen), sehingga `storage:link` **wajib** dijalankan.
 ```bash
-php artisan migrate
+# Buat symlink untuk storage folder
+php artisan storage:link
+
+# Jalankan migrasi tabel beserta pembuatan data dummy simulasi
+php artisan migrate:fresh --seed
 ```
 
-6) Install dependency frontend
+---
 
-```bash
-npm install
-```
+## 🛠️ Menjalankan Aplikasi (Local Development)
 
-7) Jalankan aplikasi (dua terminal)
+PortoHub mengandalkan proses latar belakang (Queue) dan tugas terjadwal (Cron/Scheduler) untuk fitur notifikasi dan sinkronisasi GitHub. Oleh karena itu, saat pengembangan lokal, Anda idealnya perlu menjalankan **4 proses terminal secara bersamaan**:
 
-Terminal A:
-
+**Terminal 1 (Web Server):**
 ```bash
 php artisan serve
 ```
-
-Terminal B:
-
+**Terminal 2 (Frontend Asset Bundler):**
 ```bash
 npm run dev
 ```
-
-Buka aplikasi di http://127.0.0.1:8000
-
-### Alternatif cepat (semua sekaligus)
-
+**Terminal 3 (Queue Worker untuk Notifikasi & Background Jobs):**
 ```bash
-composer run dev
+php artisan queue:work
+# Atau bisa menggunakan queue:listen jika Anda sering mengubah source code.
+```
+**Terminal 4 (Scheduler / Cron Job Simulasi Lokal):**
+```bash
+php artisan schedule:work
+# Perintah ini akan menjalankan sinkronisasi data GitHub secara otomatis sesuai jadwal.
 ```
 
-### Build untuk production
+Aplikasi kini dapat diakses di: **`http://127.0.0.1:8000`**
 
-```bash
-npm run build
-```
+---
 
-## Git Workflow (Branch)
+## 🔐 Akun Testing (Demo Seeders)
 
-### Membuat branch baru
+Ketika Anda menjalankan `php artisan migrate:fresh --seed`, sistem otomatis membuat beberapa akun dengan tingkatan *role* yang berbeda untuk keperluan *testing* fungsionalitas. **Semua password akun adalah: `password`**
 
+| Role | Nama / Identitas | Email Login | Status Skenario |
+| :--- | :--- | :--- | :--- |
+| **Admin** | Admin PortoHub | `admin@portohub.local` | Admin pusat. |
+| **Teacher** | Pak Hendra | `hendra.rpl@portohub.test` | Guru RPL, memiliki kelas X RPL B & XI RPL A. |
+| **Teacher** | Bu Dina | `dina.tkj@portohub.test` | Guru TKJ, memvalidasi proyek jurusan TKJ. |
+| **Student** | Wafi Saputra | `wafi@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Approved**. |
+| **Student** | Nabila Putri | `nabila@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Under Review**. |
+| **Student** | Tupai Kidal | `tupaikidal@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Rejected**. |
+| **Student** | Roni Pratama | `roni@portohub.test` | Siswa **belum** divalidasi oleh Admin. |
+
+Gunakan akun-akun di atas untuk mencoba alur persetujuan proyek dan interaksi (komentar) antara Guru dan Siswa.
+
+---
+
+## Git Workflow (Saran Branching)
+Saat berkontribusi ke repositori ini, biasakan membuat *branch* baru dari `main`:
 ```bash
 git checkout main
 git pull origin main
 git checkout -b feat/nama-fitur
 ```
+Penamaan *branch* yang disarankan:
+- `feat/nama-fitur`
+- `fix/perbaikan-bug`
+- `chore/maintenance`
 
-### Push branch ke remote
+---
 
-```bash
-git push -u origin feat/nama-fitur
-```
-
-### Update branch dari main
-
-```bash
-git fetch origin
-git rebase origin/main
-```
-
-### Saran penamaan branch
-
-- feat/nama-fitur
-- fix/perbaikan-bug
-- chore/maintenance
-
-## Testing
-
-```bash
-php artisan test
-```
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+*Dikembangkan dengan ❤️ untuk modernisasi ekosistem pendidikan.*

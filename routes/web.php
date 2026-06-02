@@ -15,7 +15,8 @@ Route::get('/documentation/{documentation}', [DocumentationController::class, 'd
 
 
 
-Route::get('/student/{id}', StudentProfile::class)->name('student.profile');
+Route::get('/@{username}', StudentProfile::class)->name('student.profile');
+Route::get('/@{username}/cv', \App\Livewire\Public\StudentCv::class)->name('student.cv');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified', 'role:admin,teacher,student'])

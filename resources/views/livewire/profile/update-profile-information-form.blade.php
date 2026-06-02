@@ -14,6 +14,9 @@ new class extends Component
 
     public string $name = '';
     public string $email = '';
+    public string $headline = '';
+    public string $username = '';
+    public string $linkedin_username = '';
     public $avatar;
 
     /**
@@ -23,6 +26,9 @@ new class extends Component
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->headline = Auth::user()->headline ?? '';
+        $this->username = Auth::user()->username ?? '';
+        $this->linkedin_username = Auth::user()->linkedin_username ?? '';
     }
 
     /**
@@ -35,7 +41,23 @@ new class extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+            'headline' => ['nullable', 'string', 'max:100'],
+            'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_\-]+$/', Rule::unique(User::class)->ignore($user->id)],
+            'linkedin_username' => ['nullable', 'string', 'max:100'],
         ]);
+
+        // Sanitize LinkedIn username (extract just the username if URL is pasted)
+        if (!empty($validated['linkedin_username'])) {
+            $li = $validated['linkedin_username'];
+            // Remove trailing slashes
+            $li = rtrim($li, '/');
+            // Extract from full URL
+            if (strpos($li, 'linkedin.com/in/') !== false) {
+                $parts = explode('linkedin.com/in/', $li);
+                $li = end($parts);
+            }
+            $validated['linkedin_username'] = $li;
+        }
 
         $user->fill($validated);
 
@@ -142,6 +164,35 @@ new class extends Component
             <label for="name" class="block text-sm font-semibold text-slate-700">{{ __('Nama Lengkap') }}</label>
             <input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
+        </div>
+
+        <div>
+            <label for="headline" class="block text-sm font-semibold text-slate-700">{{ __('Headline / Bio Singkat') }}</label>
+            <input wire:model="headline" id="headline" name="headline" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Contoh: Web Developer Enthusiast" autocomplete="headline" />
+            <x-input-error class="mt-2" :messages="$errors->get('headline')" />
+        </div>
+
+        <div>
+            <label for="username" class="block text-sm font-semibold text-slate-700">{{ __('Username Profil (Penting untuk URL)') }}</label>
+            <div class="mt-1 flex rounded-xl shadow-sm">
+                <span class="inline-flex items-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-slate-500 sm:text-sm">
+                    @
+                </span>
+                <input wire:model="username" id="username" name="username" type="text" class="block w-full rounded-none rounded-r-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required placeholder="wafi-saputra" />
+            </div>
+            <p class="mt-1 text-xs text-slate-500">URL publik: {{ url('/@') }}<span x-text="$wire.username || 'username'"></span></p>
+            <x-input-error class="mt-2" :messages="$errors->get('username')" />
+        </div>
+
+        <div>
+            <label for="linkedin_username" class="block text-sm font-semibold text-slate-700">{{ __('LinkedIn Username (Opsional)') }}</label>
+            <div class="mt-1 flex rounded-xl shadow-sm">
+                <span class="inline-flex items-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-slate-500 sm:text-sm">
+                    linkedin.com/in/
+                </span>
+                <input wire:model="linkedin_username" id="linkedin_username" name="linkedin_username" type="text" class="block w-full rounded-none rounded-r-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="wafisaputra" />
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('linkedin_username')" />
         </div>
 
         <div>

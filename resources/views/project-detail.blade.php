@@ -76,8 +76,8 @@
                         </div>
                         <div>
                             <p class="font-semibold text-slate-900 group-hover:text-blue-600 transition">
-                                <a href="{{ route('student.profile', $project->student_id) }}" class="hover:underline">
-                                    {{ $project->student->user->name ?? 'Siswa' }}
+                                <a href="{{ route('student.profile', ['username' => $project->student->user->username]) }}" class="hover:underline">
+                                    {{ $project->student->user->name }}
                                 </a>
                             </p>
                             <p class="text-sm text-slate-500">{{ $project->student->active_class }} &bull; Angkatan {{

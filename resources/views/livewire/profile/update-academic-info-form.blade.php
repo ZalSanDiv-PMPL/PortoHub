@@ -53,6 +53,12 @@ new class extends Component {
         }
 
         if ($user->role === 'teacher' && $user->teacher) {
+            // Check if already validated
+            if ($user->teacher->is_validated) {
+                $this->addError('general', 'Data tidak dapat diubah karena akun Anda telah divalidasi.');
+                return;
+            }
+
             $validated = $this->validate([
                 'nip' => ['required', 'string', 'max:50', Rule::unique('teachers', 'nip')->ignore($user->teacher->id)],
                 'specialization' => ['required', 'string', 'max:255'],
@@ -185,21 +191,40 @@ new class extends Component {
             {{-- Teacher Info --}}
             @if($role === 'teacher' && isset($teacher))
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="sm:col-span-2">
-                        <label for="nip" class="block text-sm font-semibold text-slate-700">NIP (Nomor Induk Pegawai)</label>
-                        <input wire:model="nip" id="nip" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Masukkan NIP Anda" />
-                        <x-input-error :messages="$errors->get('nip')" class="mt-2" />
-                    </div>
-                    <div>
-                        <label for="department" class="block text-sm font-semibold text-slate-700">Departemen</label>
-                        <input wire:model="department" id="department" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Misal: Rekayasa Perangkat Lunak" />
-                        <x-input-error :messages="$errors->get('department')" class="mt-2" />
-                    </div>
-                    <div>
-                        <label for="specialization" class="block text-sm font-semibold text-slate-700">Spesialisasi</label>
-                        <input wire:model="specialization" id="specialization" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Misal: Web Development" />
-                        <x-input-error :messages="$errors->get('specialization')" class="mt-2" />
-                    </div>
+                    @if($teacher->is_validated)
+                        <div class="sm:col-span-2 rounded-xl bg-amber-50 p-4 border border-amber-100 flex items-start gap-3">
+                            <svg class="h-5 w-5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            <p class="text-sm text-amber-800">Akun Anda telah divalidasi. Anda tidak dapat lagi mengubah NIP, Departemen, dan Spesialisasi. Silakan hubungi Admin jika terjadi kesalahan data.</p>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-semibold text-slate-700">NIP (Nomor Induk Pegawai)</label>
+                            <div class="mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">{{ $teacher->nip }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Departemen</label>
+                            <div class="mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">{{ $teacher->department }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Spesialisasi</label>
+                            <div class="mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">{{ $teacher->specialization }}</div>
+                        </div>
+                    @else
+                        <div class="sm:col-span-2">
+                            <label for="nip" class="block text-sm font-semibold text-slate-700">NIP (Nomor Induk Pegawai)</label>
+                            <input wire:model="nip" id="nip" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Masukkan NIP Anda" />
+                            <x-input-error :messages="$errors->get('nip')" class="mt-2" />
+                        </div>
+                        <div>
+                            <label for="department" class="block text-sm font-semibold text-slate-700">Departemen</label>
+                            <input wire:model="department" id="department" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Misal: Rekayasa Perangkat Lunak" />
+                            <x-input-error :messages="$errors->get('department')" class="mt-2" />
+                        </div>
+                        <div>
+                            <label for="specialization" class="block text-sm font-semibold text-slate-700">Spesialisasi</label>
+                            <input wire:model="specialization" id="specialization" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Misal: Web Development" />
+                            <x-input-error :messages="$errors->get('specialization')" class="mt-2" />
+                        </div>
+                    @endif
                 </div>
 
                 @if(isset($teacherStats))
@@ -231,7 +256,7 @@ new class extends Component {
             @endif
 
             {{-- Save Button (Only for unvalidated students or teachers) --}}
-            @if(($role === 'student' && !$student->is_validated) || $role === 'teacher')
+            @if(($role === 'student' && !$student->is_validated) || ($role === 'teacher' && !$teacher->is_validated))
                 <div class="flex items-center gap-4 pt-4 border-t border-slate-100">
                     <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition">
                         <span wire:loading.remove wire:target="saveAcademicInfo">{{ __('Simpan Data Akademik') }}</span>

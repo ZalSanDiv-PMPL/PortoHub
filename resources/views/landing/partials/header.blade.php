@@ -10,7 +10,7 @@
                     class="text-sm font-medium transition {{ request()->routeIs('gallery') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-blue-700' }}">Galeri</a>
                 @auth
                 @if(auth()->user()->isStudent() && auth()->user()->student)
-                <a href="{{ route('student.profile', auth()->user()->student->id) }}"
+                <a href="{{ route('student.profile', ['username' => auth()->user()->username]) }}"
                     class="text-sm font-medium transition {{ request()->routeIs('student.profile') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-blue-700' }}">Portofolioku</a>
                 @endif
                 <a href="{{ route('dashboard') }}"

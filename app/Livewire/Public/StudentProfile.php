@@ -22,13 +22,18 @@ class StudentProfile extends Component
         'avg_score' => 0,
     ];
 
-    public function mount($id)
+    public function mount($username)
     {
-        $this->studentId = $id;
+        $user = \App\Models\User::where('username', $username)->firstOrFail();
+        
+        $this->student = Student::with(['user.githubToken', 'classAssignments'])
+            ->where('user_id', $user->id)
+            ->where('is_validated', true)
+            ->firstOrFail();
 
-        $this->student = Student::with(['user.githubToken', 'classAssignments'])->findOrFail($id);
+        $this->studentId = $this->student->id;
 
-        $this->projects = Project::where('student_id', $id)
+        $this->projects = Project::where('student_id', $this->studentId)
             ->publiclyVisible()
             ->where('status', 'approved')
             ->with(['validation', 'githubMetadata'])
