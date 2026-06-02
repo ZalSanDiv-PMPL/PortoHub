@@ -100,19 +100,78 @@ Aplikasi kini dapat diakses di: **`http://127.0.0.1:8000`**
 
 ---
 
+## 🌐 Panduan Deployment (Production)
+
+Saat Anda bersiap untuk mengunggah aplikasi ke server *production* (seperti VPS atau Shared Hosting), ikuti pedoman standar Laravel ini untuk memastikan keamanan dan performa yang optimal:
+
+### 1. Konfigurasi `.env`
+Pastikan Anda mengubah variabel ini di file `.env` server Anda:
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://domain-anda.com
+```
+
+### 2. Install Dependencies (Production Mode)
+Hindari menginstal *package* untuk development (seperti pest/phpunit):
+```bash
+composer install --optimize-autoloader --no-dev
+```
+
+### 3. Build Asset Frontend
+Kompilasi CSS dan JS Anda menjadi versi *minified*:
+```bash
+npm install
+npm run build
+```
+
+### 4. Cache Konfigurasi & Route
+Meningkatkan kecepatan load dengan mem-*cache* pengaturan kerangka kerja:
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### 5. Eksekusi Migrasi
+Jalankan migrasi database di server (tanpa `seeder` tes agar database bersih):
+```bash
+php artisan migrate --force
+```
+
+### 6. Background Jobs & Scheduler (Penting)
+Aplikasi sangat bergantung pada *Queue* dan sinkronisasi GitHub otomatis. Untuk pengguna **cPanel / Shared Hosting** (tanpa akses Supervisor), tambahkan **2 Cron Jobs** ini agar berjalan setiap menit (`* * * * *`):
+
+**Cron Job 1: Menjalankan Scheduler (Otomatis memicu sinkronisasi GitHub)**
+```bash
+/usr/local/bin/php /home/username_cpanel/public_html/portohub/artisan schedule:run >> /dev/null 2>&1
+```
+
+**Cron Job 2: Memproses Antrean Latar Belakang (Notifikasi, Job Latar Belakang)**
+```bash
+/usr/local/bin/php /home/username_cpanel/public_html/portohub/artisan queue:work --stop-when-empty >> /dev/null 2>&1
+```
+*(Catatan: Sesuaikan `/usr/local/bin/php` dan *path* proyek dengan lokasi instalasi di server Anda. Parameter `--stop-when-empty` sangat esensial agar server tidak kelebihan muatan/overload).*
+
+*(Opsional)* Jika Anda menggunakan VPS mandiri, Anda tetap direkomendasikan menggunakan utilitas manajemen proses seperti **Supervisor** untuk `queue:work`.
+
+---
+
 ## 🔐 Akun Testing (Demo Seeders)
 
-Ketika Anda menjalankan `php artisan migrate:fresh --seed`, sistem otomatis membuat beberapa akun dengan tingkatan *role* yang berbeda untuk keperluan *testing* fungsionalitas. **Semua password akun adalah: `password`**
+Ketika Anda menjalankan `php artisan migrate:fresh --seed`, sistem otomatis membuat beberapa akun dengan tingkatan *role* yang berbeda untuk keperluan *testing* fungsionalitas. Anda dapat login menggunakan **Email** ataupun **Username**.
 
-| Role | Nama / Identitas | Email Login | Status Skenario |
-| :--- | :--- | :--- | :--- |
-| **Admin** | Admin PortoHub | `admin@portohub.local` | Admin pusat. |
-| **Teacher** | Pak Hendra | `hendra.rpl@portohub.test` | Guru RPL, memiliki kelas X RPL B & XI RPL A. |
-| **Teacher** | Bu Dina | `dina.tkj@portohub.test` | Guru TKJ, memvalidasi proyek jurusan TKJ. |
-| **Student** | Wafi Saputra | `wafi@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Approved**. |
-| **Student** | Nabila Putri | `nabila@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Under Review**. |
-| **Student** | Tupai Kidal | `tupaikidal@portohub.test` | Siswa tervalidasi. Memiliki proyek berstatus **Rejected**. |
-| **Student** | Roni Pratama | `roni@portohub.test` | Siswa **belum** divalidasi oleh Admin. |
+Sebagian besar akun memiliki password *default*: **`password`** (kecuali ditandai khusus).
+
+| Role | Nama / Identitas | Email / Username Login | Password | Status Skenario |
+| :--- | :--- | :--- | :--- | :--- |
+| **Admin** | Admin PortoHub | `admin@portohub.local` / `admin-portohub` | `password` | Admin pusat. |
+| **Teacher** | Pak Hendra | `hendra.rpl@portohub.test` / `pak-hendra` | `password` | Guru RPL, memiliki kelas X RPL B & XI RPL A. |
+| **Teacher** | Bu Dina | `dina.tkj@portohub.test` / `bu-dina` | `password` | Guru TKJ, memvalidasi proyek jurusan TKJ. |
+| **Student** | Wafi Saputra | `wafi@portohub.test` / `wafi-saputra` | `password` | Siswa tervalidasi. Memiliki proyek berstatus **Approved**. |
+| **Student** | Nabila Putri | `nabila@portohub.test` / `nabila-putri` | `password` | Siswa tervalidasi. Memiliki proyek berstatus **Under Review**. |
+| **Student** | Tupai Kidal | `tupaikidal@portohub.test` / `tupaikidal` | **`Kambingguling_001`** | Siswa tervalidasi. Memiliki proyek berstatus **Rejected**. |
+| **Student** | Roni Pratama | `roni@portohub.test` / `roni-pratama` | `password` | Siswa **belum** divalidasi oleh Admin. |
 
 Gunakan akun-akun di atas untuk mencoba alur persetujuan proyek dan interaksi (komentar) antara Guru dan Siswa.
 
