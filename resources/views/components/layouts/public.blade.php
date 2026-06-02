@@ -6,6 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="{{ $metaDescription ?? 'PortoHub adalah platform dokumentasi dan validasi portfolio proyek akhir siswa RPL.' }}">
 
+    @if(isset($meta))
+        {{ $meta }}
+    @endif
+
     <title>{{ $title ?? config('app.name', 'PortoHub') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">

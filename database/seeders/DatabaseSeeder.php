@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@portohub.local',
         ], [
             'name' => 'Admin PortoHub',
+            'headline' => 'System Administrator',
+            'username' => 'admin',
             'role' => 'admin',
             'password' => env('SEED_ADMIN_PASSWORD', 'password'),
             'password_set_at' => now(),

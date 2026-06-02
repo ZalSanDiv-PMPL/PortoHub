@@ -28,12 +28,6 @@
             <div class="grid grid-cols-2 gap-4">
                 @php
                     $aspectRatios = ['aspect-[4/5]', 'aspect-square', 'aspect-video', 'aspect-[3/4]'];
-                    $defaultImages = [
-                        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop',
-                        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&auto=format&fit=crop',
-                        'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=600&auto=format&fit=crop',
-                        'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop'
-                    ];
                 @endphp
                 <div class="space-y-4 translate-y-8">
                     @for($i = 0; $i < 2; $i++)
@@ -42,7 +36,9 @@
                             @if($proj && $proj->thumbnail_path)
                                 <img src="{{ asset('storage/' . $proj->thumbnail_path) }}" alt="{{ $proj->title }}" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
                             @else
-                                <img src="{{ $defaultImages[$i] }}" alt="Placeholder" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
+                                <div class="w-full rounded-lg bg-slate-100 flex items-center justify-center {{ $aspectRatios[$i] }}">
+                                    <span class="text-slate-400 text-sm">No Image</span>
+                                </div>
                             @endif
                             <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1 truncate" title="{{ $proj ? $proj->title : 'Proyek Kosong' }}">{{ $proj ? $proj->title : 'Menunggu Proyek...' }}</p>
                         </div>
@@ -55,7 +51,9 @@
                             @if($proj && $proj->thumbnail_path)
                                 <img src="{{ asset('storage/' . $proj->thumbnail_path) }}" alt="{{ $proj->title }}" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
                             @else
-                                <img src="{{ $defaultImages[$i] }}" alt="Placeholder" class="w-full rounded-lg object-cover {{ $aspectRatios[$i] }}" />
+                                <div class="w-full rounded-lg bg-slate-100 flex items-center justify-center {{ $aspectRatios[$i] }}">
+                                    <span class="text-slate-400 text-sm">No Image</span>
+                                </div>
                             @endif
                             <p class="mt-2 text-xs font-semibold text-slate-600 px-2 pb-1 truncate" title="{{ $proj ? $proj->title : 'Proyek Kosong' }}">{{ $proj ? $proj->title : 'Menunggu Proyek...' }}</p>
                         </div>

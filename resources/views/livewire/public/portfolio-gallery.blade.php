@@ -120,7 +120,9 @@ new class extends Component {
                                 <x-avatar :url="$project->student->user->avatar_url" :name="$project->student->user->name" />
                             </div>
                             <div class="text-sm">
-                                <p class="font-medium text-slate-900">{{ $project->student->user->name }}</p>
+                                <a href="{{ route('student.profile', ['username' => $project->student->user->username]) }}" class="font-medium text-slate-900 hover:text-blue-600 transition-colors">
+                                    {{ $project->student->user->name }}
+                                </a>
                                 <p class="text-slate-500 text-xs">{{ $project->student->active_class }}</p>
                             </div>
                         </div>

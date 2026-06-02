@@ -49,6 +49,8 @@ class DemoPortfolioSeeder extends Seeder
                 ['email' => $td['email']],
                 [
                     'name' => $td['name'],
+                    'headline' => 'Computer Science Teacher | Tech Enthusiast',
+                    'username' => Str::slug($td['name']),
                     'role' => 'teacher',
                     'password' => 'password',
                     'password_set_at' => now(),
@@ -74,6 +76,7 @@ class DemoPortfolioSeeder extends Seeder
         // 2. BUAT SISWA (STUDENTS) & PROYEK
         // ==========================================
         $students = collect([
+            // --- APPROVED PROJECTS (DITAMPILKAN DI LANDING PAGE) ---
             [
                 'email' => 'wafi@portohub.test',
                 'name' => 'Wafi Saputra',
@@ -83,45 +86,126 @@ class DemoPortfolioSeeder extends Seeder
                 'is_validated' => true,
                 'github_username' => 'wafi-saputra',
                 'project' => [
-                    'title' => 'FinTech Dashboard',
+                    'title' => 'EduTrack: Platform Manajemen Pembelajaran (LMS)',
                     'development_model' => 'agile',
                     'status' => 'approved',
-                    'github_url' => 'https://github.com/portohub/fintech-dashboard',
-                    'description' => 'Dashboard keuangan dengan visualisasi arus kas, kontrol role-based access, dan dokumentasi deployment yang rapi.',
-                    'repo_name' => 'fintech-dashboard',
-                    'repo_owner' => 'portohub',
+                    'github_url' => 'https://github.com/portohub/edutrack-lms',
+                    'description' => 'Sistem manajemen pembelajaran (LMS) modern berbasis web. Memiliki fitur pelacakan nilai, manajemen tugas, dan integrasi absensi secara real-time.',
+                    'repo_name' => 'edutrack-lms',
+                    'repo_owner' => 'wafi-saputra',
                     'language' => 'PHP',
-                    'commit_count' => 86,
-                    'commit_frequency' => 12,
+                    'thumbnail_path' => 'thumbnails/edutrack_lms.png',
+                    'commit_count' => 124,
+                    'commit_frequency' => 18,
                     'submission_offset' => 18,
                     'approval_offset' => 6,
                     'validation_note' => 'Struktur kode stabil, dokumentasi lengkap, dan flow utama berjalan tanpa error. Layak untuk referensi publik.',
                 ]
             ],
             [
+                'email' => 'siti.aminah@portohub.test',
+                'name' => 'Siti Aminah',
+                'nis' => '2026002',
+                'class' => 'XI RPL A',
+                'teacher_email' => 'hendra.rpl@portohub.test',
+                'is_validated' => true,
+                'github_username' => 'siti-bakery',
+                'project' => [
+                    'title' => 'Sweet Bakery E-Commerce & Inventory',
+                    'development_model' => 'waterfall',
+                    'status' => 'approved',
+                    'github_url' => 'https://github.com/portohub/sweet-bakery-pos',
+                    'description' => 'Aplikasi kasir (POS) sekaligus etalase toko roti online. Memudahkan pelanggan melihat katalog kue dan pemilik toko untuk memanajemen stok bahan.',
+                    'repo_name' => 'sweet-bakery-pos',
+                    'repo_owner' => 'siti-bakery',
+                    'language' => 'JavaScript',
+                    'thumbnail_path' => 'thumbnails/ecommerce_bakery.png',
+                    'commit_count' => 95,
+                    'commit_frequency' => 10,
+                    'submission_offset' => 20,
+                    'approval_offset' => 5,
+                    'validation_note' => 'Tampilan antarmuka sangat estetik dan fungsionalitas keranjang belanja berjalan mulus.',
+                ]
+            ],
+            [
+                'email' => 'budi.santoso@portohub.test',
+                'name' => 'Budi Santoso',
+                'nis' => '2026003',
+                'class' => 'XI TKJ B',
+                'teacher_email' => 'dina.tkj@portohub.test',
+                'is_validated' => true,
+                'github_username' => 'budi-cloud',
+                'project' => [
+                    'title' => 'Smart Cloud Storage Server',
+                    'development_model' => 'other',
+                    'status' => 'approved',
+                    'github_url' => 'https://github.com/portohub/smart-cloud-storage',
+                    'description' => 'Implementasi private cloud server menggunakan Nextcloud yang di-hosting pada Raspberry Pi untuk kebutuhan file sharing sekolah.',
+                    'repo_name' => 'smart-cloud-storage',
+                    'repo_owner' => 'budi-cloud',
+                    'language' => 'Shell',
+                    'thumbnail_path' => 'thumbnails/cloud_storage.png',
+                    'commit_count' => 45,
+                    'commit_frequency' => 5,
+                    'submission_offset' => 15,
+                    'approval_offset' => 3,
+                    'validation_note' => 'Konfigurasi server sangat baik, setup firewall dan SSL certificate sudah diimplementasikan dengan aman.',
+                ]
+            ],
+            [
+                'email' => 'citra@portohub.test',
+                'name' => 'Citra Kirana',
+                'nis' => '2026004',
+                'class' => 'XI RPL B',
+                'teacher_email' => 'hendra.rpl@portohub.test',
+                'is_validated' => true,
+                'github_username' => 'citra-ai',
+                'project' => [
+                    'title' => 'AI Stock Market Prediction System',
+                    'development_model' => 'agile',
+                    'status' => 'approved',
+                    'github_url' => 'https://github.com/portohub/ai-stock-predict',
+                    'description' => 'Dashboard pintar yang menggunakan Machine Learning untuk memprediksi tren saham harian dengan visualisasi data candlestick yang interaktif.',
+                    'repo_name' => 'ai-stock-predict',
+                    'repo_owner' => 'citra-ai',
+                    'language' => 'Python',
+                    'thumbnail_path' => 'thumbnails/ai_stock.png',
+                    'commit_count' => 112,
+                    'commit_frequency' => 15,
+                    'submission_offset' => 10,
+                    'approval_offset' => 2,
+                    'validation_note' => 'Algoritma prediksi berjalan cukup akurat dan UI dark mode-nya sangat luar biasa.',
+                ]
+            ],
+
+            // --- UNDER REVIEW ---
+            [
                 'email' => 'nabila@portohub.test',
                 'name' => 'Nabila Putri',
-                'nis' => '2026002',
+                'nis' => '2026005',
                 'class' => 'XI RPL B',
                 'teacher_email' => 'hendra.rpl@portohub.test',
                 'is_validated' => true,
                 'github_username' => 'nabila-putri',
                 'project' => [
-                    'title' => 'Learning Archive System',
+                    'title' => 'Smart POS & Inventori Apotek',
                     'development_model' => 'waterfall',
                     'status' => 'under_review',
-                    'github_url' => 'https://github.com/portohub/learning-archive-system',
-                    'description' => 'Sistem arsip karya siswa untuk menampung proyek yang sudah tervalidasi dan siap dipakai sebagai referensi publik.',
-                    'repo_name' => 'learning-archive-system',
-                    'repo_owner' => 'portohub',
+                    'github_url' => 'https://github.com/portohub/smart-pos-apotek',
+                    'description' => 'Aplikasi pencatatan stok obat dan Point of Sales (POS) khusus untuk apotek, dengan pengingat tanggal kedaluwarsa obat secara otomatis.',
+                    'repo_name' => 'smart-pos-apotek',
+                    'repo_owner' => 'nabila-putri',
                     'language' => 'PHP',
-                    'commit_count' => 41,
-                    'commit_frequency' => 6,
+                    'thumbnail_path' => 'thumbnails/smart_pos.png',
+                    'commit_count' => 68,
+                    'commit_frequency' => 8,
                     'submission_offset' => 2,
                     'approval_offset' => null,
-                    'validation_note' => 'Dokumentasi sudah cukup baik, tapi periksa kembali keamanan pada fitur login.',
+                    'validation_note' => 'Dokumentasi sudah cukup baik, tapi periksa kembali keamanan pada fitur login dan otorisasi level kasir.',
                 ]
             ],
+
+            // --- REJECTED ---
             [
                 'email' => 'tupaikidal@portohub.test',
                 'name' => 'Tupai Kidal',
@@ -131,31 +215,34 @@ class DemoPortfolioSeeder extends Seeder
                 'is_validated' => true,
                 'github_username' => 'tupaikidal-dev',
                 'project' => [
-                    'title' => 'IoT Smart Farm Monitoring',
+                    'title' => 'Sistem Monitoring Jaringan SNMP',
                     'development_model' => 'other',
                     'status' => 'rejected',
-                    'github_url' => 'https://github.com/tupaikidal/iot-smart-farm',
-                    'description' => 'Sistem pemantauan lahan pertanian cerdas menggunakan IoT dan Arduino.',
-                    'repo_name' => 'iot-smart-farm',
+                    'github_url' => 'https://github.com/tupaikidal/snmp-network-monitor',
+                    'description' => 'Dashboard monitoring jaringan berbasis SNMP untuk memantau penggunaan bandwidth dan uptime server sekolah secara real-time.',
+                    'repo_name' => 'snmp-network-monitor',
                     'repo_owner' => 'tupaikidal',
                     'language' => 'C++',
-                    'commit_count' => 12,
-                    'commit_frequency' => 2,
+                    'thumbnail_path' => 'thumbnails/snmp_monitor.png',
+                    'commit_count' => 34,
+                    'commit_frequency' => 4,
                     'submission_offset' => 5,
                     'approval_offset' => null,
-                    'validation_note' => 'Sistem masih memiliki beberapa bug saat sensor terputus. Silakan perbaiki logic error handling-nya.',
-                    'rejection_reason' => 'Proyek dikembalikan untuk diperbaiki (error handling sensor gagal).',
+                    'validation_note' => 'Konfigurasi SSH server dan alert system masih error. Topologi jaringan di dokumen juga belum lengkap.',
+                    'rejection_reason' => 'Keamanan SSH masih terbuka untuk publik, harap amankan dengan public key authentication.',
                 ]
             ],
+
+            // --- UNVALIDATED ---
             [
                 'email' => 'roni@portohub.test',
                 'name' => 'Roni Pratama',
-                'nis' => '2026003',
+                'nis' => '2026006',
                 'class' => 'XI RPL A',
                 'teacher_email' => 'hendra.rpl@portohub.test',
                 'is_validated' => false, // BELUM DIVALIDASI ADMIN
                 'github_username' => 'roni-pratama',
-                'project' => null // Tidak punya proyek karena belum tervalidasi
+                'project' => null // Tidak punya proyek
             ],
         ]);
 
@@ -164,6 +251,9 @@ class DemoPortfolioSeeder extends Seeder
                 ['email' => $studentData['email']],
                 [
                     'name' => $studentData['name'],
+                    'headline' => 'Junior Web Developer | Vocational High School Student',
+                    'username' => Str::slug($studentData['name']),
+                    'linkedin_username' => Str::slug($studentData['name']),
                     'role' => 'student',
                     'password' => 'password',
                     'password_set_at' => now(),
@@ -223,6 +313,7 @@ class DemoPortfolioSeeder extends Seeder
                         'submission_date' => now()->subDays($projData['submission_offset']),
                         'approval_date' => $projData['approval_offset'] ? now()->subDays($projData['approval_offset']) : null,
                         'rejection_reason' => $projData['rejection_reason'] ?? null,
+                        'thumbnail_path' => $projData['thumbnail_path'] ?? null,
                     ]
                 );
 
@@ -280,10 +371,10 @@ class DemoPortfolioSeeder extends Seeder
                         ['project_id' => $project->id],
                         [
                             'teacher_id' => $assignedTeacher->id,
-                            'functionality_score' => $projData['status'] === 'approved' ? 91.25 : ($projData['status'] === 'rejected' ? 50.00 : 82.50),
-                            'code_quality_score' => $projData['status'] === 'approved' ? 89.50 : ($projData['status'] === 'rejected' ? 60.00 : 78.00),
-                            'documentation_score' => $projData['status'] === 'approved' ? 92.00 : ($projData['status'] === 'rejected' ? 55.00 : 74.50),
-                            'originality_score' => $projData['status'] === 'approved' ? 88.25 : ($projData['status'] === 'rejected' ? 70.00 : 80.00),
+                            'functionality_score' => $projData['status'] === 'approved' ? rand(88, 98) : ($projData['status'] === 'rejected' ? rand(40, 65) : rand(75, 85)),
+                            'code_quality_score' => $projData['status'] === 'approved' ? rand(85, 95) : ($projData['status'] === 'rejected' ? rand(50, 60) : rand(70, 80)),
+                            'documentation_score' => $projData['status'] === 'approved' ? rand(90, 100) : ($projData['status'] === 'rejected' ? rand(45, 55) : rand(70, 78)),
+                            'originality_score' => $projData['status'] === 'approved' ? rand(85, 95) : ($projData['status'] === 'rejected' ? rand(60, 70) : rand(75, 85)),
                             'is_approved' => $projData['status'] === 'approved',
                             'validation_date' => $projData['status'] === 'approved' ? now()->subDays(2) : null,
                             'notes' => $projData['validation_note'],

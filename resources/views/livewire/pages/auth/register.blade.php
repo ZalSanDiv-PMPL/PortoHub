@@ -14,6 +14,7 @@ new #[Layout('layouts.auth-split')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $role = 'student';
 
     /**
      * Handle an incoming registration request.
@@ -24,10 +25,20 @@ new #[Layout('layouts.auth-split')] class extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'string', 'in:student,teacher'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['password_set_at'] = now();
+
+        $baseUsername = \Illuminate\Support\Str::slug($validated['name']);
+        $username = $baseUsername;
+        $counter = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . '-' . $counter;
+            $counter++;
+        }
+        $validated['username'] = $username;
 
         $user = User::create($validated);
         $user->refresh();
@@ -37,6 +48,12 @@ new #[Layout('layouts.auth-split')] class extends Component
                 'user_id' => $user->id,
                 'nis' => null,
                 'year' => null,
+            ]);
+        } elseif ($user->role === 'teacher') {
+            \App\Models\Teacher::create([
+                'user_id' => $user->id,
+                'nip' => null,
+                'is_validated' => false,
             ]);
         }
 
@@ -50,11 +67,10 @@ new #[Layout('layouts.auth-split')] class extends Component
 
 <div class="min-h-screen grid grid-cols-1 md:grid-cols-2">
     <!-- Left: Marketing / Illustration -->
-    <div class="hidden md:flex items-center justify-center bg-gradient-to-b from-blue-800 to-sky-900 text-white p-8">
-        <div class="max-w-lg">
-            <h2 class="text-5xl font-extrabold">Gabung ke PortoHub</h2>
-            <p class="mt-6 text-lg leading-relaxed">Daftar sekarang untuk menjadi bagian dari PortoHub dan buat proyek
-                Anda lebih terverifikasi serta profesional.</p>
+    <div class="hidden md:flex items-center justify-center bg-gradient-to-b from-blue-800 to-sky-900 text-white p-8 transition-all duration-500">
+        <div class="max-w-lg" x-data="{ role: @entangle('role') }">
+            <h2 class="text-5xl font-extrabold" x-text="role === 'teacher' ? 'Bergabung sebagai Guru' : 'Gabung ke PortoHub'">Gabung ke PortoHub</h2>
+            <p class="mt-6 text-lg leading-relaxed" x-text="role === 'teacher' ? 'Validasi dan kelola portofolio siswa dengan mudah. Bantu mereka lebih profesional dan siap untuk terjun ke industri.' : 'Daftar sekarang untuk menjadi bagian dari PortoHub dan buat proyek Anda lebih terverifikasi serta profesional.'">Daftar sekarang untuk menjadi bagian dari PortoHub dan buat proyek Anda lebih terverifikasi serta profesional.</p>
             <div class="mt-8">
                 <a href="{{ route('login') }}"
                     class="inline-flex w-full max-w-xs items-center justify-center px-4 py-3 bg-white/90 text-blue-800 font-semibold rounded-full hover:bg-white transition">Sudah
@@ -69,6 +85,22 @@ new #[Layout('layouts.auth-split')] class extends Component
             <h1 class="text-3xl font-bold text-gray-900 mb-6">Daftar</h1>
 
             <form wire:submit="register" class="space-y-4">
+                
+                <!-- Role Toggle -->
+                <div class="flex p-1 space-x-1 bg-slate-100/80 rounded-xl mb-6">
+                    <button type="button" 
+                        wire:click="$set('role', 'student')"
+                        class="w-full rounded-lg py-2.5 text-sm font-bold leading-5 ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2 transition-all duration-200"
+                        :class="$wire.role === 'student' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'">
+                        Sebagai Siswa
+                    </button>
+                    <button type="button" 
+                        wire:click="$set('role', 'teacher')"
+                        class="w-full rounded-lg py-2.5 text-sm font-bold leading-5 ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2 transition-all duration-200"
+                        :class="$wire.role === 'teacher' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'">
+                        Sebagai Guru
+                    </button>
+                </div>
                 <div>
                     <x-input-label for="name" value="Nama" />
                     <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required
@@ -168,6 +200,12 @@ new #[Layout('layouts.auth-split')] class extends Component
                         </svg>
                         GitHub
                     </a>
+                    <p class="text-xs text-center text-slate-500 mt-3 font-medium flex items-center justify-center gap-1.5">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Pendaftaran via GitHub dikhususkan untuk akun Siswa.
+                    </p>
                 </div>
             </div>
         </div>

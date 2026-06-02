@@ -27,7 +27,7 @@ new class extends Component
                 <a href="{{ route('gallery') }}" class="text-sm font-medium transition {{ request()->routeIs('gallery') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Galeri</a>
                 @auth
                     @if(auth()->user()->isStudent() && auth()->user()->student)
-                        <a href="{{ route('student.profile', auth()->user()->student->id) }}" class="text-sm font-medium transition {{ request()->routeIs('student.profile') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Portofolioku</a>
+                        <a href="{{ route('student.profile', ['username' => auth()->user()->username]) }}" class="text-sm font-medium transition {{ request()->routeIs('student.profile') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Portofolioku</a>
                     @endif
                     <a href="{{ route('dashboard') }}" class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Dasbor</a>
                 @else
@@ -38,14 +38,7 @@ new class extends Component
 
         <div class="flex items-center gap-4">
             @auth
-                <div class="relative hidden sm:block">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <input type="text" class="block w-full rounded-md border-0 bg-slate-200/70 py-1.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6" placeholder="Cari info...">
-                </div>
+                <livewire:layout.global-search />
 
                 <livewire:layout.notifications />
 

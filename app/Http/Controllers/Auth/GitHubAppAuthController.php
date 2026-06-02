@@ -207,8 +207,18 @@ class GitHubAppAuthController extends Controller
         }
 
         // Langkah 2.3: Register Pengguna Baru
+        $name = $userResponse['name'] ?? $githubUsername;
+        $baseUsername = Str::slug($name);
+        $username = $baseUsername;
+        $counter = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . '-' . $counter;
+            $counter++;
+        }
+
         $user = User::create([
-            'name' => $userResponse['name'] ?? $githubUsername,
+            'name' => $name,
+            'username' => $username,
             'email' => $githubEmail ?? 'github_'.$githubId.'@noreply.portohub.local',
             'password' => bcrypt(Str::random(24)),
             'password_set_at' => null,

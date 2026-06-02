@@ -101,6 +101,35 @@ new class extends Component {
         </div>
     </div>
 
+    @if(auth()->user()->teacher && (empty(auth()->user()->teacher->nip) || empty(auth()->user()->teacher->specialization) || empty(auth()->user()->teacher->department)))
+    <!-- Academic Info Warning Banner -->
+    <div class="mb-8 p-4 rounded-xl bg-amber-50/80 backdrop-blur-md border border-amber-200 text-amber-800 flex items-start sm:items-center justify-between shadow-sm">
+        <div class="flex items-start sm:items-center">
+            <svg class="w-6 h-6 mr-3 flex-shrink-0 text-amber-600 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <h4 class="font-bold text-sm">Data Akademik Belum Lengkap</h4>
+                <p class="text-sm mt-1 sm:mt-0">Admin tidak dapat memvalidasi akun Anda jika NIP, Spesialisasi, atau Departemen masih kosong. Mohon lengkapi Data Akademik Anda di pengaturan profil.</p>
+            </div>
+        </div>
+        <a href="{{ route('profile') }}" class="ml-4 inline-flex items-center justify-center rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-500 whitespace-nowrap">
+            Lengkapi Sekarang
+        </a>
+    </div>
+    @elseif(auth()->user()->teacher && !auth()->user()->teacher->is_validated)
+    <!-- Validation Warning Banner -->
+    <div class="mb-8 p-4 rounded-xl bg-blue-50/80 backdrop-blur-md border border-blue-200 text-blue-800 flex items-start sm:items-center shadow-sm">
+        <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-600 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+            <h4 class="font-bold text-sm">Akun Anda sedang dalam peninjauan.</h4>
+            <p class="text-sm mt-1 sm:mt-0">Data Anda sudah lengkap. Admin sekolah perlu menyetujui akun Anda sebelum Anda bisa diikutsertakan ke dalam penempatan kelas untuk meninjau proyek siswa.</p>
+        </div>
+    </div>
+    @endif
+
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <!-- Card 1 -->
