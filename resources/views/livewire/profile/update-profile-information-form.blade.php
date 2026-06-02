@@ -178,7 +178,7 @@ new class extends Component
                 <span class="inline-flex items-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-slate-500 sm:text-sm">
                     @
                 </span>
-                <input wire:model="username" id="username" name="username" type="text" class="block w-full rounded-none rounded-r-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required placeholder="wafi-saputra" />
+                <input wire:model="username" id="username" name="username" type="text" class="block w-full rounded-none rounded-r-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required placeholder="divarvian" />
             </div>
             <p class="mt-1 text-xs text-slate-500">URL publik: {{ url('/@') }}<span x-text="$wire.username || 'username'"></span></p>
             <x-input-error class="mt-2" :messages="$errors->get('username')" />
@@ -190,7 +190,7 @@ new class extends Component
                 <span class="inline-flex items-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-slate-500 sm:text-sm">
                     linkedin.com/in/
                 </span>
-                <input wire:model="linkedin_username" id="linkedin_username" name="linkedin_username" type="text" class="block w-full rounded-none rounded-r-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="wafisaputra" />
+                <input wire:model="linkedin_username" id="linkedin_username" name="linkedin_username" type="text" class="block w-full rounded-none rounded-r-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="divarvian" />
             </div>
             <x-input-error class="mt-2" :messages="$errors->get('linkedin_username')" />
         </div>
