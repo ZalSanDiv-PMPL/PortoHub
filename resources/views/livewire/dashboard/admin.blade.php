@@ -146,8 +146,8 @@ new class extends Component {
             return;
         }
 
-        if (empty($this->studentToValidate->nis)) {
-            session()->flash('error', 'Siswa tidak memiliki NIS. Validasi gagal.');
+        if (empty($this->studentToValidate->nis) || empty($this->studentToValidate->year)) {
+            session()->flash('error', 'Siswa tidak memiliki NIS atau Tahun Angkatan. Validasi gagal.');
             return;
         }
 
@@ -368,7 +368,11 @@ new class extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <button wire:click="openValidateStudentModal({{ $student->id }})" class="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-4 py-1.5 rounded-lg transition-colors sm:w-auto w-full">Validasi</button>
+                            @if(empty($student->nis) || empty($student->year))
+                                <button disabled class="text-sm font-bold text-slate-400 bg-slate-100 cursor-not-allowed shadow-sm px-4 py-1.5 rounded-lg transition-colors sm:w-auto w-full">Data Tidak Lengkap</button>
+                            @else
+                                <button wire:click="openValidateStudentModal({{ $student->id }})" class="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-4 py-1.5 rounded-lg transition-colors sm:w-auto w-full">Validasi</button>
+                            @endif
                         </div>
                         @empty
                         <div class="p-8 text-center">
@@ -489,8 +493,8 @@ new class extends Component {
                                                 <div>
                                                     <div class="flex items-center gap-2">
                                                         <p class="font-bold text-slate-900">{{ $student->user->name }}</p>
-                                                        @if(empty($student->nis))
-                                                            <span class="inline-flex items-center rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20">Data Kosong</span>
+                                                        @if(empty($student->nis) || empty($student->year))
+                                                            <span class="inline-flex items-center rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20">Data Tidak Lengkap</span>
                                                         @endif
                                                     </div>
                                                     <p class="text-xs text-slate-500">{{ $student->user->email }}</p>
@@ -498,7 +502,7 @@ new class extends Component {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            @if(empty($student->nis))
+                                            @if(empty($student->nis) || empty($student->year))
                                                 <span class="text-rose-500 font-medium italic text-xs">Menunggu Siswa</span>
                                             @else
                                                 <span class="font-mono text-slate-700 font-medium">{{ $student->nis }}</span>
@@ -506,7 +510,7 @@ new class extends Component {
                                         </td>
                                         <td class="px-6 py-4 text-slate-600 font-medium">{{ $student->year ?? '-' }}</td>
                                         <td class="px-6 py-4 text-right">
-                                            @if(empty($student->nis))
+                                            @if(empty($student->nis) || empty($student->year))
                                                 <button disabled class="inline-flex items-center justify-center rounded-xl bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-400 cursor-not-allowed">Validasi & Tempatkan</button>
                                             @else
                                                 <button wire:click="openValidateStudentModal({{ $student->id }})" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-500 opacity-80 group-hover:opacity-100">Validasi & Tempatkan</button>

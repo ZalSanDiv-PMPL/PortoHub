@@ -26,10 +26,14 @@ class StudentProfile extends Component
     {
         $user = \App\Models\User::where('username', $username)->firstOrFail();
         
-        $this->student = Student::with(['user.githubToken', 'classAssignments'])
-            ->where('user_id', $user->id)
-            ->where('is_validated', true)
-            ->firstOrFail();
+        $studentQuery = Student::with(['user.githubToken', 'classAssignments'])
+            ->where('user_id', $user->id);
+
+        if (! auth()->check() || auth()->id() !== $user->id) {
+            $studentQuery->where('is_validated', true);
+        }
+
+        $this->student = $studentQuery->firstOrFail();
 
         $this->studentId = $this->student->id;
 
