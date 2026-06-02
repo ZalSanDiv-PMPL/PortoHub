@@ -4,7 +4,7 @@
 
 # PortoHub
 
-**PortoHub** adalah aplikasi web manajemen dan pameran (*showcase*) portofolio siswa yang dikembangkan untuk mempermudah proses validasi karya siswa oleh guru dan menampilkannya sebagai galeri publik. Aplikasi ini dibangun dengan stack modern menggunakan Laravel 11, Livewire Volt, dan Tailwind CSS (mengusung desain modern berbasis *Glassmorphism*).
+**PortoHub** adalah aplikasi web manajemen dan pameran (*showcase*) portofolio siswa yang dikembangkan untuk mempermudah proses validasi karya siswa oleh guru dan menampilkannya sebagai galeri publik. Aplikasi ini dibangun dengan stack modern menggunakan Laravel 13, Livewire Volt, dan Tailwind CSS (mengusung desain modern berbasis *Glassmorphism*).
 
 ## ✨ Fitur Utama
 
