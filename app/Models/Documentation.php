@@ -24,6 +24,7 @@ class Documentation extends Model
     ];
 
     protected $casts = [
+        'project_id' => 'integer',
         'is_public' => 'boolean',
     ];
 

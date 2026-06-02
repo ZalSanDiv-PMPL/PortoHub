@@ -21,6 +21,8 @@ class ClassAssignment extends Model
     ];
 
     protected $casts = [
+        'teacher_id' => 'integer',
+        'student_id' => 'integer',
         'is_active' => 'boolean',
     ];
 

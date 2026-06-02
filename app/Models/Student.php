@@ -22,6 +22,8 @@ class Student extends Model
     ];
 
     protected $casts = [
+        'user_id' => 'integer',
+        'year' => 'integer',
         'is_validated' => 'boolean',
     ];
 

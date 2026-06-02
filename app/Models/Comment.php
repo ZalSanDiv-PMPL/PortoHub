@@ -21,6 +21,9 @@ class Comment extends Model
     ];
 
     protected $casts = [
+        'project_id' => 'integer',
+        'teacher_id' => 'integer',
+        'student_id' => 'integer',
         'is_pinned' => 'boolean',
     ];
 
