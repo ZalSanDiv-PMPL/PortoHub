@@ -100,6 +100,55 @@ Aplikasi kini dapat diakses di: **`http://127.0.0.1:8000`**
 
 ---
 
+## 🌐 Panduan Deployment (Production)
+
+Saat Anda bersiap untuk mengunggah aplikasi ke server *production* (seperti VPS atau Shared Hosting), ikuti pedoman standar Laravel ini untuk memastikan keamanan dan performa yang optimal:
+
+### 1. Konfigurasi `.env`
+Pastikan Anda mengubah variabel ini di file `.env` server Anda:
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://domain-anda.com
+```
+
+### 2. Install Dependencies (Production Mode)
+Hindari menginstal *package* untuk development (seperti pest/phpunit):
+```bash
+composer install --optimize-autoloader --no-dev
+```
+
+### 3. Build Asset Frontend
+Kompilasi CSS dan JS Anda menjadi versi *minified*:
+```bash
+npm install
+npm run build
+```
+
+### 4. Cache Konfigurasi & Route
+Meningkatkan kecepatan load dengan mem-*cache* pengaturan kerangka kerja:
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### 5. Eksekusi Migrasi
+Jalankan migrasi database di server (tanpa `seeder` tes agar database bersih):
+```bash
+php artisan migrate --force
+```
+
+### 6. Background Jobs & Scheduler (Penting)
+Karena aplikasi sangat bergantung pada *Queue* dan sinkronisasi GitHub:
+1. **Supervisor**: Gunakan Supervisor untuk memastikan `php artisan queue:work` berjalan abadi (di background) dan otomatis *restart* jika terjadi *crash*.
+2. **Cron Job**: Tambahkan *entry* Cron Job di server Anda (misal via `crontab -e` atau cPanel) agar berjalan setiap menit:
+```bash
+* * * * * cd /path/to/portohub && php artisan schedule:run >> /dev/null 2>&1
+```
+
+---
+
 ## 🔐 Akun Testing (Demo Seeders)
 
 Ketika Anda menjalankan `php artisan migrate:fresh --seed`, sistem otomatis membuat beberapa akun dengan tingkatan *role* yang berbeda untuk keperluan *testing* fungsionalitas. **Semua password akun adalah: `password`**
