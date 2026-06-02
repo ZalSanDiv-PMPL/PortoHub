@@ -14,7 +14,7 @@
                     class="text-sm font-medium transition {{ request()->routeIs('student.profile') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-blue-700' }}">Portofolioku</a>
                 @endif
                 <a href="{{ route('dashboard') }}"
-                    class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}">Dasbor</a>
+                    class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}">Dashboard</a>
                 @else
                 <a href="{{ route('home') }}#testimoni"
                     class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Testimoni</a>

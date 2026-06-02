@@ -47,7 +47,7 @@ class ProjectSubmitted extends Notification
             'project_title' => $this->project->title,
             'student_id' => $this->student->id,
             'student_name' => $this->student->user->name,
-            'message' => "Siswa {$this->student->user->name} telah mengunggah proyek \"{$this->project->title}\" untuk direviu.",
+            'message' => "Siswa {$this->student->user->name} telah mengunggah proyek \"{$this->project->title}\" untuk direview.",
             'url' => route('project.show', $this->project->id),
         ];
     }
