@@ -297,7 +297,15 @@ new class extends Component {
                         <tbody class="divide-y divide-slate-200/60 bg-transparent">
                             @forelse($pendingStudents as $student)
                                 <tr class="transition hover:bg-white/60">
-                                    <td class="px-6 py-4 font-medium text-slate-900">{{ $student->user->name }}<br><span class="text-xs text-slate-500 font-normal">{{ $student->user->email }}</span></td>
+                                    <td class="px-6 py-4 font-medium text-slate-900">
+                                        <div class="flex items-center gap-2">
+                                            <span>{{ $student->user->name }}</span>
+                                            @if(empty($student->nis))
+                                                <span class="inline-flex items-center rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20">Profil Tidak Lengkap</span>
+                                            @endif
+                                        </div>
+                                        <span class="text-xs text-slate-500 font-normal">{{ $student->user->email }}</span>
+                                    </td>
                                     <td class="px-6 py-4 text-slate-600">
                                         @if(empty($student->nis))
                                             <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Belum isi NIS</span>

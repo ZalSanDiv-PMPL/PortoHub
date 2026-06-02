@@ -11,6 +11,7 @@ new class extends Component {
     public bool $isFeedbackModalOpen = false;
     public ?Project $selectedProjectDetail = null;
     public array $detailComments = [];
+    public string $replyContent = '';
 
     public function openFeedbackModal(Project $project)
     {
@@ -22,7 +23,7 @@ new class extends Component {
         $this->selectedProjectDetail = $project->load('validation');
         
         $this->detailComments = Comment::where('project_id', $project->id)
-            ->with('teacher.user')
+            ->with(['teacher.user', 'student.user'])
             ->orderByDesc('is_pinned')
             ->orderByDesc('created_at')
             ->get()
@@ -41,6 +42,7 @@ new class extends Component {
         $this->isFeedbackModalOpen = false;
         $this->selectedProjectDetail = null;
         $this->detailComments = [];
+        $this->replyContent = '';
     }
 
     public function resubmitProject()
@@ -50,9 +52,48 @@ new class extends Component {
                 'status' => 'submitted',
                 'submission_date' => now()
             ]);
+            
+            $student = $this->selectedProjectDetail->student;
+            $activeTeachers = $student->teachers()->wherePivot('is_active', true)->get();
+            foreach ($activeTeachers as $teacher) {
+                $teacher->user->notify(new \App\Notifications\ProjectResubmitted($this->selectedProjectDetail, $student));
+            }
+
             $this->closeFeedbackModal();
             session()->flash('success', 'Proyek berhasil diajukan ulang untuk direviu.');
         }
+    }
+
+    public function addReply()
+    {
+        $this->validate([
+            'replyContent' => 'required|string|min:3',
+        ]);
+
+        Comment::create([
+            'project_id' => $this->selectedProjectDetail->id,
+            'student_id' => auth()->user()->student->id,
+            'teacher_id' => null,
+            'content' => $this->replyContent,
+            'comment_type' => 'general',
+            'status' => 'pending',
+            'is_pinned' => false,
+        ]);
+
+        $student = auth()->user()->student;
+        $activeTeachers = $student->teachers()->wherePivot('is_active', true)->get();
+        foreach ($activeTeachers as $teacher) {
+            $teacher->user->notify(new \App\Notifications\NewReplyNotification($this->selectedProjectDetail, $student));
+        }
+
+        $this->replyContent = '';
+        
+        $this->detailComments = Comment::where('project_id', $this->selectedProjectDetail->id)
+            ->with(['teacher.user', 'student.user'])
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('created_at')
+            ->get()
+            ->toArray();
     }
 
     public function with()
@@ -70,9 +111,12 @@ new class extends Component {
         if ($student) {
             $query = $student->projects()
                 ->with('validation')
-                ->withCount(['comments' => function($q) {
-                    $q->where('status', 'pending');
-                }])
+                ->withCount([
+                    'comments as pending_comments_count' => function($q) {
+                        $q->where('status', 'pending');
+                    },
+                    'comments'
+                ])
                 ->orderBy('created_at', 'desc');
                 
             if ($this->filterStatus !== 'all') {
@@ -389,10 +433,10 @@ new class extends Component {
                     @endif
                 </div>
                 <div class="flex items-center gap-4">
-                    @if($project->status === 'approved' || $project->status === 'rejected')
+                    @if($project->status === 'approved' || $project->status === 'rejected' || $project->comments_count > 0)
                         <button type="button" wire:click="openFeedbackModal({{ $project->id }})" class="relative text-sm font-bold {{ $project->status === 'rejected' ? 'text-rose-600 hover:text-rose-800' : 'text-blue-600 hover:text-blue-800' }} inline-flex items-center transition">
-                            {{ $project->status === 'rejected' ? 'Lihat Revisi' : 'Lihat Penilaian' }}
-                            @if($project->comments_count > 0)
+                            {{ $project->status === 'rejected' ? 'Lihat Revisi' : ($project->status === 'approved' ? 'Lihat Penilaian' : 'Lihat Diskusi') }}
+                            @if($project->pending_comments_count > 0)
                                 <span class="absolute -top-0.5 -right-1 flex h-2 w-2">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -475,12 +519,22 @@ new class extends Component {
                     @foreach($detailComments as $comment)
                     <div class="rounded-xl p-4 sm:p-5 border {{ $comment['is_pinned'] ? 'bg-amber-50/60 border-amber-200/60 ring-1 ring-amber-100' : 'bg-white border-slate-200/60' }}">
                         <div class="flex items-start gap-3">
-                            <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">
-                                {{ substr(explode(' ', $comment['teacher']['user']['name'])[0] ?? 'G', 0, 1) }}
-                            </div>
+                            @if($comment['student_id'])
+                                <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0 overflow-hidden">
+                                    <x-avatar :url="$comment['student']['user']['avatar_url'] ?? null" :name="$comment['student']['user']['name'] ?? 'Siswa'" />
+                                </div>
+                            @else
+                                <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0 overflow-hidden">
+                                    <x-avatar :url="$comment['teacher']['user']['avatar_url'] ?? null" :name="$comment['teacher']['user']['name'] ?? 'Guru'" />
+                                </div>
+                            @endif
                             <div class="flex-1">
                                 <div class="flex items-center gap-2">
-                                    <span class="font-bold text-sm text-slate-900">{{ $comment['teacher']['user']['name'] ?? 'Guru' }}</span>
+                                    @if($comment['student_id'])
+                                        <span class="font-bold text-sm text-slate-900">{{ $comment['student']['user']['name'] ?? 'Siswa' }} (Saya)</span>
+                                    @else
+                                        <span class="font-bold text-sm text-slate-900">{{ $comment['teacher']['user']['name'] ?? 'Guru' }}</span>
+                                    @endif
                                     <span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($comment['created_at'])->diffForHumans() }}</span>
                                 </div>
                                 <div class="mt-2 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $comment['content'] }}</div>
@@ -504,6 +558,21 @@ new class extends Component {
                     Belum ada umpan balik yang diberikan.
                 </div>
                 @endif
+                
+                <!-- Reply Form -->
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="text-sm font-bold text-slate-900 mb-3">Balas Komentar</h4>
+                    <div class="flex gap-3">
+                        <textarea wire:model="replyContent" rows="2" class="flex-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition" placeholder="Tulis balasan..."></textarea>
+                        <button wire:click="addReply" wire:loading.attr="disabled" wire:target="addReply" type="button" class="self-end inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition disabled:opacity-50">
+                            <span wire:loading.remove wire:target="addReply">Kirim</span>
+                            <span wire:loading.inline-flex wire:target="addReply">
+                                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            </span>
+                        </button>
+                    </div>
+                    @error('replyContent') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                </div>
             </div>
 
             <!-- Footer Action for Rejected -->
@@ -511,7 +580,10 @@ new class extends Component {
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 rounded-b-2xl flex justify-end">
                 <button type="button" wire:click="resubmitProject" class="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 transition">
                     <span wire:loading.remove wire:target="resubmitProject">Ajukan Ulang Proyek</span>
-                    <span wire:loading wire:target="resubmitProject">Memproses...</span>
+                    <span wire:loading.inline-flex wire:target="resubmitProject" class="items-center gap-1.5">
+                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        Memproses...
+                    </span>
                 </button>
             </div>
             @else

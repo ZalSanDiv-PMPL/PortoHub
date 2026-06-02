@@ -14,8 +14,6 @@ new class extends Component
 
     public string $name = '';
     public string $email = '';
-    public string $nis = '';
-    public string $year = '';
     public $avatar;
 
     /**
@@ -25,10 +23,6 @@ new class extends Component
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
-        if (Auth::user()->isStudent() && Auth::user()->student) {
-            $this->nis = Auth::user()->student->nis ?? '';
-            $this->year = Auth::user()->student->year ?? '';
-        }
     }
 
     /**
@@ -49,14 +43,6 @@ new class extends Component
             $user->email_verified_at = null;
         }
 
-        if ($user->isStudent() && $user->student) {
-            $validatedStudent = $this->validate([
-                'nis' => ['required', 'string', 'max:20', Rule::unique('students', 'nis')->ignore($user->student->id)],
-                'year' => ['required', 'integer', 'min:2000', 'max:' . (date('Y') + 5)],
-            ]);
-            $user->student->fill($validatedStudent);
-            $user->student->save();
-        }
 
         if ($this->avatar) {
             $validatedAvatar = $this->validate([
@@ -111,12 +97,12 @@ new class extends Component
 
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
+        <h2 class="text-lg font-bold text-slate-900">
+            {{ __('Informasi Dasar') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
+        <p class="mt-1 text-sm text-slate-500">
+            {{ __("Perbarui nama, email, dan foto profil akun Anda.") }}
         </p>
     </header>
 
@@ -124,13 +110,13 @@ new class extends Component
         
         <!-- Avatar Section -->
         <div class="flex items-center gap-6">
-            <div class="relative h-20 w-20 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+            <div class="relative h-20 w-20 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shadow-sm">
                 @if ($avatar)
                     <img src="{{ $avatar->temporaryUrl() }}" class="h-full w-full object-cover">
                 @else
                     <x-avatar :url="auth()->user()->avatar_url" :name="auth()->user()->name" />
                 @endif
-                <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <div class="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                     <label for="avatar" class="cursor-pointer p-2">
                         <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     </label>
@@ -139,12 +125,12 @@ new class extends Component
             <div class="flex-1">
                 <input type="file" id="avatar" wire:model="avatar" class="hidden" accept="image/*">
                 <div class="flex gap-3">
-                    <label for="avatar" class="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
-                        {{ __('Upload Photo') }}
+                    <label for="avatar" class="cursor-pointer inline-flex items-center px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition">
+                        {{ __('Ubah Foto') }}
                     </label>
                     @if (auth()->user()->avatar_path)
-                        <button type="button" wire:click="removeAvatar" class="inline-flex items-center px-4 py-2 bg-white border border-red-300 rounded-md font-semibold text-xs text-red-600 uppercase tracking-widest shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
-                            {{ __('Remove') }}
+                        <button type="button" wire:click="removeAvatar" class="inline-flex items-center px-4 py-2.5 bg-rose-50 border border-rose-200 rounded-xl text-sm font-semibold text-rose-600 shadow-sm hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition">
+                            {{ __('Hapus') }}
                         </button>
                     @endif
                 </div>
@@ -153,14 +139,14 @@ new class extends Component
         </div>
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
+            <label for="name" class="block text-sm font-semibold text-slate-700">{{ __('Nama Lengkap') }}</label>
+            <input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
+            <label for="email" class="block text-sm font-semibold text-slate-700">{{ __('Email') }}</label>
+            <input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
@@ -182,34 +168,17 @@ new class extends Component
             @endif
         </div>
 
-        @if(auth()->user()->isStudent())
-            <div class="pt-6 mt-6 border-t border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Data Akademik') }}</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <x-input-label for="nis" value="NIS (Nomor Induk Siswa)" />
-                        <x-text-input wire:model="nis" id="nis" name="nis" type="text" class="mt-1 block w-full" placeholder="Misal: 12345" />
-                        <x-input-error class="mt-2" :messages="$errors->get('nis')" />
-                    </div>
-                    
-                    <div>
-                        <x-input-label for="year" value="Tahun Angkatan" />
-                        <x-text-input wire:model="year" id="year" name="year" type="number" min="2000" class="mt-1 block w-full" placeholder="Misal: {{ date('Y') }}" />
-                        <x-input-error class="mt-2" :messages="$errors->get('year')" />
-                    </div>
-                </div>
-                <p class="mt-3 text-sm text-gray-500">
-                    Pastikan NIS diisi dengan benar. Kelas akan ditentukan oleh Admin atau Guru Pembimbing Anda saat proses validasi.
-                </p>
-            </div>
-        @endif
+        <div class="flex items-center gap-4 pt-4 border-t border-slate-100">
+            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition">
+                <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Simpan Perubahan') }}</span>
+                <span wire:loading.inline-flex wire:target="updateProfileInformation" class="items-center gap-2">
+                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    Menyimpan...
+                </span>
+            </button>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Saved.') }}
+            <x-action-message class="me-3 text-sm font-medium text-emerald-600" on="profile-updated">
+                {{ __('Berhasil disimpan.') }}
             </x-action-message>
         </div>
     </form>

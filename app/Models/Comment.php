@@ -13,6 +13,7 @@ class Comment extends Model
     protected $fillable = [
         'project_id',
         'teacher_id',
+        'student_id',
         'content',
         'comment_type',
         'status',
@@ -31,5 +32,10 @@ class Comment extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class);
     }
 }

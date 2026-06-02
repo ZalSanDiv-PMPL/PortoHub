@@ -66,6 +66,16 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
 
+        if ($this->project->status === 'approved') {
+            $this->validate([
+                'visibility' => 'required|in:public,restricted,private',
+            ]);
+            $this->project->visibility = $this->visibility;
+            $this->project->save();
+            session()->flash('success', 'Visibilitas proyek berhasil disimpan.');
+            return;
+        }
+
         $this->validate([
             'title' => 'required|min:5',
             'description' => 'required|min:15',
@@ -105,8 +115,8 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function deleteProject()
     {
-        if ($this->project->status === 'under_review') {
-            session()->flash('error', 'Proyek yang sedang direviu tidak dapat dihapus.');
+        if (in_array($this->project->status, ['under_review', 'approved'])) {
+            session()->flash('error', 'Proyek yang sedang direviu atau sudah lulus tidak dapat dihapus.');
             return;
         }
 
@@ -227,41 +237,43 @@ new #[Layout('layouts.app')] class extends Component {
 }"
 @link-added.window="showLinkModal = false"
 @doc-added.window="showDocModal = false">
-    <x-slot name="header">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard') }}" class="inline-flex items-center justify-center p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition" wire:navigate>
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </a>
-            <div>
-                <h2 class="text-xl font-bold text-slate-900 leading-tight">
-                    Kelola Proyek: {{ $project->title }}
-                </h2>
-                <div class="flex items-center gap-2 mt-1">
-                    @if($project->status === 'submitted')
-                        <span class="flex items-center gap-1.5 text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Diajukan
-                        </span>
-                    @elseif($project->status === 'under_review')
-                        <span class="flex items-center gap-1.5 text-sm font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Sedang Direviu
-                        </span>
-                    @elseif($project->status === 'approved')
-                        <span class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Disetujui
-                        </span>
-                    @else
-                        <span class="flex items-center gap-1.5 text-sm font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Ditolak
-                        </span>
-                    @endif
+    <div class="py-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <a wire:navigate href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-700 mb-2 transition">
+                        <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali ke Dashboard
+                    </a>
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Kelola Proyek: {{ $project->title }}</h2>
+                    <div class="flex items-center gap-2 mt-2">
+                        @if($project->status === 'submitted')
+                            <span class="flex items-center gap-1.5 text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Diajukan
+                            </span>
+                        @elseif($project->status === 'under_review')
+                            <span class="flex items-center gap-1.5 text-sm font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Sedang Direviu
+                            </span>
+                        @elseif($project->status === 'approved')
+                            <span class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Lulus Validasi
+                            </span>
+                            <span class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Disetujui
+                            </span>
+                        @else
+                            <span class="flex items-center gap-1.5 text-sm font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Ditolak
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </x-slot>
-
-    <div class="py-12">
+        
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Kolom Kiri: Info & Danger Zone -->
@@ -287,47 +299,59 @@ new #[Layout('layouts.app')] class extends Component {
                                     </div>
                                 @endif
                             </div>
+                            @if(in_array($project->status, ['under_review', 'approved']))
+                            <div class="rounded-xl bg-slate-50 p-4 border border-slate-200 text-sm text-slate-600 flex items-start gap-3">
+                                <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p>Proyek ini sedang dalam proses peninjauan atau telah lulus validasi. Anda hanya dapat mengubah <strong>Visibilitas Proyek</strong>. Jika ada kesalahan data, silakan hubungi guru yang bersangkutan.</p>
+                            </div>
+                            @endif
 
-                            @if($project->status !== 'under_review')
+                            @if(!in_array($project->status, ['under_review', 'approved']))
                             <div>
-                                <label for="thumbnail" class="block text-sm font-semibold text-slate-900 mb-1">Ubah Sampul Proyek</label>
-                                <input type="file" wire:model="thumbnail" id="thumbnail" accept=".jpg,.jpeg,.png,.webp"
-                                    class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl bg-white focus:outline-none">
-                                <p class="mt-1 text-xs text-slate-500">Format JPG, PNG, WebP — maksimal 2MB. Biarkan kosong jika tidak ingin mengubah.</p>
-
-                                <div wire:loading wire:target="thumbnail" class="mt-2 inline-flex items-center gap-1.5 text-blue-600">
-                                    <svg class="animate-spin h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <label class="block text-sm font-semibold text-slate-900 mb-2">Gambar Sampul Proyek</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-blue-400 transition bg-slate-50/50">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex justify-center text-sm text-slate-600 mt-2">
+                                            <label for="thumbnail" class="relative cursor-pointer rounded-md bg-white font-medium text-blue-600 focus-within:outline-none hover:text-blue-500">
+                                                <span>Unggah file baru</span>
+                                                <input id="thumbnail" wire:model="thumbnail" type="file" class="sr-only" accept="image/*">
+                                            </label>
+                                            <p class="pl-1">atau tarik dan lepas</p>
+                                        </div>
+                                        <p class="text-xs text-slate-500">PNG, JPG, WebP maksimal 2MB</p>
+                                    </div>
+                                </div>
+                                <div wire:loading wire:target="thumbnail" class="mt-2 text-blue-600 flex items-center gap-2">
+                                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                     <span class="text-xs font-medium leading-none">Mengunggah gambar...</span>
                                 </div>
-                                @error('thumbnail') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
-                                @if ($thumbnail)
-                                <div class="mt-2 relative inline-block">
-                                    <img src="{{ $thumbnail->temporaryUrl() }}" alt="Preview" class="h-32 object-cover rounded-xl border border-slate-200 shadow-sm opacity-50">
-                                    <span class="absolute inset-0 flex items-center justify-center font-bold text-slate-700 bg-white/70 rounded-xl">Pratinjau Baru</span>
-                                </div>
-                                @endif
                             </div>
                             @endif
 
                             <div>
                                 <label for="title" class="block text-sm font-semibold text-slate-900 mb-1">Judul Proyek <span class="text-red-500">*</span></label>
-                                <input type="text" wire:model="title" id="title" {{ $project->status === 'under_review' ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
+                                <input type="text" wire:model="title" id="title" {{ in_array($project->status, ['under_review', 'approved']) ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
                                 @error('title') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
                                 <label for="description" class="block text-sm font-semibold text-slate-900 mb-1">Deskripsi Singkat <span class="text-red-500">*</span></label>
-                                <textarea wire:model="description" id="description" rows="4" {{ $project->status === 'under_review' ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500"></textarea>
+                                <textarea wire:model="description" id="description" rows="4" {{ in_array($project->status, ['under_review', 'approved']) ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500"></textarea>
                                 @error('description') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="development_model" class="block text-sm font-semibold text-slate-900 mb-1">Model Pengembangan</label>
-                                    <select wire:model="development_model" id="development_model" {{ $project->status === 'under_review' ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
+                                    <select wire:model="development_model" id="development_model" {{ in_array($project->status, ['under_review', 'approved']) ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
                                         <option value="waterfall">Waterfall</option>
                                         <option value="agile">Agile / Scrum</option>
                                         <option value="other">Lainnya</option>
@@ -336,14 +360,14 @@ new #[Layout('layouts.app')] class extends Component {
                                 </div>
                                 <div>
                                     <label for="github_url" class="block text-sm font-semibold text-slate-900 mb-1">URL GitHub <span class="text-red-500">*</span></label>
-                                    <input type="url" wire:model="github_url" id="github_url" {{ $project->status === 'under_review' ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
+                                    <input type="url" wire:model="github_url" id="github_url" {{ in_array($project->status, ['under_review', 'approved']) ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
                                     @error('github_url') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
 
                             <div>
                                 <label for="visibility" class="block text-sm font-semibold text-slate-900 mb-1">Visibilitas Proyek</label>
-                                <select wire:model="visibility" id="visibility" {{ $project->status === 'under_review' ? 'disabled' : '' }} class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500">
+                                <select wire:model="visibility" id="visibility" class="block w-full rounded-xl border-slate-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="public">Publik — Dapat dilihat semua orang</option>
                                     <option value="restricted">Terbatas — Hanya guru & industri terundang</option>
                                     <option value="private">Privat — Hanya saya & guru pengampu</option>
@@ -351,17 +375,21 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
 
-                        @if($project->status !== 'under_review')
+                        @if(!in_array($project->status, ['under_review']))
                         <div class="bg-slate-50 p-6 sm:px-8 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-2xl">
+                            @if($project->status !== 'approved')
                             <button type="button" @click="showDeleteModal = true" class="inline-flex w-full justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-200 hover:bg-red-50 sm:w-auto transition items-center gap-1.5">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                                 Hapus Proyek
                             </button>
+                            @else
+                            <div><!-- Placeholder to push save button to right --></div>
+                            @endif
                             <button type="submit" class="inline-flex w-full justify-center rounded-xl bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:w-auto transition items-center">
                                 <span wire:loading.remove wire:target="submitProject">Simpan Perubahan</span>
-                                <span wire:loading wire:target="submitProject" class="inline-flex items-center gap-2">
+                                <span wire:loading.inline-flex wire:target="submitProject" class="items-center gap-2">
                                     <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>

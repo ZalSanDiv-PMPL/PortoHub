@@ -1,25 +1,24 @@
 <?php
 
 use Livewire\Volt\Component;
+use Livewire\WithPagination;
 use App\Models\Project;
-use App\Models\Comment;
 
 new class extends Component {
-    public $selectedProject = null;
-    public $showReviewModal = false;
-    public string $classFilter = '';
-    public $validationNotes = '';
-    
-    // Scoring rubrics (0-100)
-    public int $functionalityScore = 80;
-    public int $codeQualityScore = 80;
-    public int $documentationScore = 80;
-    public int $originalityScore = 80;
+    use WithPagination;
 
-    // Comment system
-    public string $commentContent = '';
-    public string $commentType = 'general';
-    public $projectComments = [];
+    public string $classFilter = '';
+    public string $statusFilter = 'menunggu'; // menunggu, revisi, lulus, semua
+
+    public function updatingClassFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
 
     public function with()
     {
@@ -31,7 +30,7 @@ new class extends Component {
                 'menungguValidasi' => 0,
                 'totalKelas' => 0,
                 'daftarKelas' => collect(),
-                'antreanProyek' => collect()
+                'antreanProyek' => collect() // or empty paginator if needed
             ];
         }
 
@@ -41,6 +40,11 @@ new class extends Component {
         
         $studentIds = $teacher->students()->pluck('students.id');
 
+        // Menghitung yang benar-benar menunggu validasi untuk stat card
+        $menungguValidasi = Project::whereIn('student_id', $studentIds)
+            ->whereIn('status', ['submitted', 'under_review'])
+            ->count();
+
         // Filter berdasarkan kelas jika dipilih
         if (!empty($this->classFilter)) {
             $filteredStudentIds = $teacher->classAssignments()
@@ -49,15 +53,26 @@ new class extends Component {
             $studentIds = $studentIds->intersect($filteredStudentIds);
         }
         
-        $antreanProyek = Project::whereIn('student_id', $studentIds)
-            ->whereIn('status', ['submitted', 'under_review'])
+        $query = Project::whereIn('student_id', $studentIds)
             ->with(['student.user', 'student.classAssignments' => function($q) use ($teacher) {
                 $q->where('teacher_id', $teacher->id);
             }])
-            ->orderBy('submission_date', 'asc')
-            ->get();
-            
-        $menungguValidasi = $antreanProyek->count();
+            ->withCount(['comments as unread_comments_count' => function($q) {
+                // Comments from students that haven't been viewed/replied
+                $q->whereNotNull('student_id')->where('status', 'pending');
+            }]);
+
+        // Filter berdasarkan status
+        if ($this->statusFilter === 'menunggu') {
+            $query->whereIn('status', ['submitted', 'under_review'])
+                  ->orderByRaw("FIELD(status, 'submitted', 'under_review')");
+        } elseif ($this->statusFilter === 'revisi') {
+            $query->where('status', 'rejected');
+        } elseif ($this->statusFilter === 'lulus') {
+            $query->where('status', 'approved');
+        }
+
+        $antreanProyek = $query->orderBy('submission_date', 'asc')->paginate(10);
 
         return [
             'siswaDiampu' => $siswaDiampu,
@@ -66,168 +81,6 @@ new class extends Component {
             'daftarKelas' => $daftarKelas,
             'antreanProyek' => $antreanProyek,
         ];
-    }
-
-    public function openReviewModal($projectId)
-    {
-        $teacher = auth()->user()->teacher;
-        $studentIds = $teacher->students()->pluck('students.id');
-
-        $this->selectedProject = Project::with(['student.user', 'student.classAssignments'])
-            ->whereIn('student_id', $studentIds)
-            ->find($projectId);
-
-        if (!$this->selectedProject) {
-            session()->flash('error', 'Proyek tidak ditemukan atau bukan milik siswa Anda.');
-            return;
-        }
-
-        // Set status menjadi under_review saat guru membuka modal
-        if ($this->selectedProject->status === 'submitted') {
-            $this->selectedProject->update(['status' => 'under_review']);
-        }
-
-        $this->loadComments();
-        $this->validationNotes = '';
-        $this->commentContent = '';
-        $this->commentType = 'general';
-        $this->showReviewModal = true;
-    }
-
-    public function closeReviewModal()
-    {
-        $this->showReviewModal = false;
-        $this->selectedProject = null;
-        $this->validationNotes = '';
-        $this->functionalityScore = 80;
-        $this->codeQualityScore = 80;
-        $this->documentationScore = 80;
-        $this->originalityScore = 80;
-        $this->commentContent = '';
-        $this->commentType = 'general';
-        $this->projectComments = [];
-    }
-
-    public function loadComments()
-    {
-        if ($this->selectedProject) {
-            $this->projectComments = Comment::where('project_id', $this->selectedProject->id)
-                ->with('teacher.user')
-                ->orderByDesc('is_pinned')
-                ->orderByDesc('created_at')
-                ->get()
-                ->toArray();
-        }
-    }
-
-    public function addComment()
-    {
-        $this->validate([
-            'commentContent' => 'required|string|min:3',
-            'commentType' => 'required|in:general,code_review,requirement,suggestion',
-        ], [
-            'commentContent.required' => 'Isi komentar wajib diisi.',
-            'commentContent.min' => 'Komentar minimal 3 karakter.',
-        ]);
-
-        Comment::create([
-            'project_id' => $this->selectedProject->id,
-            'teacher_id' => auth()->user()->teacher->id,
-            'content' => $this->commentContent,
-            'comment_type' => $this->commentType,
-            'status' => 'pending',
-            'is_pinned' => false,
-        ]);
-
-        $this->commentContent = '';
-        $this->commentType = 'general';
-        $this->loadComments();
-    }
-
-    public function togglePinComment($commentId)
-    {
-        $comment = Comment::find($commentId);
-        if ($comment && $comment->teacher_id === auth()->user()->teacher->id) {
-            $comment->update(['is_pinned' => !$comment->is_pinned]);
-            $this->loadComments();
-        }
-    }
-
-    /**
-     * Validasi rubrik dan catatan sebelum approve/reject.
-     */
-    private function validateReview(): void
-    {
-        $this->validate([
-            'validationNotes' => 'required|string|min:5',
-            'functionalityScore' => 'required|integer|min:0|max:100',
-            'codeQualityScore' => 'required|integer|min:0|max:100',
-            'documentationScore' => 'required|integer|min:0|max:100',
-            'originalityScore' => 'required|integer|min:0|max:100',
-        ], [
-            'validationNotes.required' => 'Catatan validasi wajib diisi.',
-            'validationNotes.min' => 'Catatan validasi minimal 5 karakter.',
-            'functionalityScore.required' => 'Skor fungsionalitas wajib diisi.',
-            'functionalityScore.min' => 'Skor minimal 0.',
-            'functionalityScore.max' => 'Skor maksimal 100.',
-            'codeQualityScore.required' => 'Skor kualitas kode wajib diisi.',
-            'documentationScore.required' => 'Skor dokumentasi wajib diisi.',
-            'originalityScore.required' => 'Skor orisinalitas wajib diisi.',
-        ]);
-    }
-
-    /**
-     * Simpan data validasi ke tabel validations.
-     */
-    private function saveValidation(bool $isApproved): void
-    {
-        \App\Models\Validation::updateOrCreate(
-            ['project_id' => $this->selectedProject->id],
-            [
-                'teacher_id' => auth()->user()->teacher->id,
-                'is_approved' => $isApproved,
-                'validation_date' => now(),
-                'notes' => $this->validationNotes,
-                'functionality_score' => $this->functionalityScore,
-                'code_quality_score' => $this->codeQualityScore,
-                'documentation_score' => $this->documentationScore,
-                'originality_score' => $this->originalityScore,
-            ]
-        );
-    }
-
-    public function approveProject()
-    {
-        if (!$this->selectedProject) return;
-
-        $this->validateReview();
-        
-        $this->selectedProject->update([
-            'status' => 'approved',
-            'approval_date' => now(),
-            'rejection_reason' => null
-        ]);
-
-        $this->saveValidation(true);
-        $this->closeReviewModal();
-        session()->flash('success', 'Proyek berhasil disetujui.');
-    }
-
-    public function rejectProject()
-    {
-        if (!$this->selectedProject) return;
-
-        $this->validateReview();
-        
-        $this->selectedProject->update([
-            'status' => 'rejected',
-            'rejection_reason' => $this->validationNotes,
-            'approval_date' => null
-        ]);
-
-        $this->saveValidation(false);
-        $this->closeReviewModal();
-        session()->flash('success', 'Proyek ditolak untuk direvisi.');
     }
 }; ?>
 
@@ -297,15 +150,17 @@ new class extends Component {
     </div>
 
     <!-- Daftar Validasi Proyek (Table) -->
-    <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h3 class="text-lg font-bold text-slate-900">Antrean Validasi Proyek</h3>
-        <div class="relative w-full sm:w-auto">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
-            <input type="text" class="block w-full sm:w-64 rounded-xl border-slate-200 bg-white/70 backdrop-blur-md py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition hover:bg-white/90" placeholder="Cari siswa atau proyek...">
+    <div class="mb-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h3 class="text-lg font-bold text-slate-900">Antrean Validasi Proyek</h3>
+        </div>
+        
+        <!-- Tab Filters -->
+        <div class="flex space-x-2 border-b border-slate-200">
+            <button wire:click="$set('statusFilter', 'menunggu')" class="px-4 py-2 text-sm font-medium border-b-2 {{ $statusFilter === 'menunggu' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' }} transition">Menunggu Review</button>
+            <button wire:click="$set('statusFilter', 'revisi')" class="px-4 py-2 text-sm font-medium border-b-2 {{ $statusFilter === 'revisi' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' }} transition">Revisi Siswa</button>
+            <button wire:click="$set('statusFilter', 'lulus')" class="px-4 py-2 text-sm font-medium border-b-2 {{ $statusFilter === 'lulus' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' }} transition">Selesai/Lulus</button>
+            <button wire:click="$set('statusFilter', 'semua')" class="px-4 py-2 text-sm font-medium border-b-2 {{ $statusFilter === 'semua' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' }} transition">Semua</button>
         </div>
     </div>
 
@@ -344,16 +199,30 @@ new class extends Component {
                             <td class="px-6 py-4">
                                 <div class="text-sm text-slate-900 font-medium">{{ $proyek->title }}</div>
                                 <div class="text-xs text-slate-500">
-                                    <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                                        {{ ucfirst(str_replace('_', ' ', $proyek->status)) }}
-                                    </span>
+                                    @if($proyek->status === 'rejected')
+                                        <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/20">
+                                            Menunggu Revisi Siswa
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                            {{ ucfirst(str_replace('_', ' ', $proyek->status)) }}
+                                        </span>
+                                    @endif
                                 </div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-slate-500">
                                 {{ $proyek->submission_date ? \Carbon\Carbon::parse($proyek->submission_date)->diffForHumans() : '-' }}
                             </td>
-                            <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                <button wire:click="openReviewModal({{ $proyek->id }})" class="text-blue-600 hover:text-blue-900 font-semibold bg-blue-50 px-3 py-1.5 rounded-lg transition hover:bg-blue-100">Review</button>
+                            <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium relative">
+                                <a wire:navigate href="{{ route('teacher.review', $proyek->id) }}" class="inline-flex items-center text-blue-600 hover:text-blue-900 font-semibold bg-blue-50 px-3 py-1.5 rounded-lg transition hover:bg-blue-100 relative">
+                                    Review
+                                    @if($proyek->unread_comments_count > 0)
+                                        <span class="absolute -top-1 -right-1 flex h-3 w-3" title="{{ $proyek->unread_comments_count }} balasan baru">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                        </span>
+                                    @endif
+                                </a>
                             </td>
                         </tr>
                     @empty
@@ -373,222 +242,7 @@ new class extends Component {
         </div>
     </div>
 
-    <!-- Modal Review & Validasi -->
-    <div x-data="{ open: @entangle('showReviewModal') }" 
-         x-show="open" 
-         style="display: none;" 
-         class="relative z-50" 
-         aria-labelledby="modal-title" 
-         role="dialog" 
-         aria-modal="true">
-         
-        <!-- Backdrop -->
-        <div x-show="open" 
-             x-transition:enter="ease-out duration-300" 
-             x-transition:enter-start="opacity-0" 
-             x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in duration-200" 
-             x-transition:leave-start="opacity-100" 
-             x-transition:leave-end="opacity-0" 
-             class="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"></div>
-
-        <!-- Modal Panel -->
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div x-show="open" 
-                     x-transition:enter="ease-out duration-300" 
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                     x-transition:leave="ease-in duration-200" 
-                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                     @click.away="$wire.closeReviewModal()"
-                     class="relative transform overflow-hidden rounded-2xl bg-white/90 backdrop-blur-xl border border-white/50 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl ring-1 ring-slate-200/50">
-                     
-                    @if($selectedProject)
-                    <div class="p-6 sm:p-8">
-                        <div class="flex items-center space-x-4 mb-6">
-                            <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xl overflow-hidden">
-                                <x-avatar :url="$selectedProject->student->user->avatar_url" :name="$selectedProject->student->user->name" />
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900" id="modal-title">{{ $selectedProject->title }}</h3>
-                                <p class="text-sm text-slate-500">Oleh: {{ $selectedProject->student->user->name }} • {{ $selectedProject->student->active_class }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Project Details -->
-                        <div class="space-y-4 mb-8">
-                            <div class="rounded-xl bg-slate-50 p-4 border border-slate-100">
-                                @if($selectedProject->thumbnail_path)
-                                    <div class="mb-4">
-                                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Gambar Sampul</h4>
-                                        <img src="{{ asset('storage/' . $selectedProject->thumbnail_path) }}" class="rounded-xl border border-slate-200 w-full object-cover max-h-64 shadow-sm" alt="Thumbnail">
-                                    </div>
-                                @endif
-                                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Deskripsi Proyek</h4>
-                                <p class="text-sm text-slate-700">{{ $selectedProject->description }}</p>
-                            </div>
-                            
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $selectedProject->github_url }}" target="_blank" class="inline-flex items-center space-x-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 px-4 py-2 rounded-xl hover:bg-slate-50 transition">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                    </svg>
-                                    <span>Lihat Repositori GitHub</span>
-                                    <svg class="h-4 w-4 ml-1 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                </a>
-                                <span class="text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-lg border border-blue-100">
-                                    Model: {{ ucfirst($selectedProject->development_model) }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Scoring Rubrics -->
-                        <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Fungsionalitas (0-100)</label>
-                                <input type="number" min="0" max="100" wire:model="functionalityScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
-                                @error('functionalityScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Kualitas Kode (0-100)</label>
-                                <input type="number" min="0" max="100" wire:model="codeQualityScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
-                                @error('codeQualityScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Dokumentasi (0-100)</label>
-                                <input type="number" min="0" max="100" wire:model="documentationScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
-                                @error('documentationScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Orisinalitas (0-100)</label>
-                                <input type="number" min="0" max="100" wire:model="originalityScore" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
-                                @error('originalityScore') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-
-                        <!-- Feedback Form -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-900 mb-2">Catatan Validasi & Feedback (Wajib untuk Penolakan)</label>
-                            <textarea wire:model="validationNotes" rows="4" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition" placeholder="Tuliskan catatan Anda di sini..."></textarea>
-                            @error('validationNotes') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- Comment Section -->
-                        <div class="border-t border-slate-200/60 pt-6 mt-6">
-                            <h4 class="text-sm font-bold text-slate-900 mb-4 flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                                Komentar & Catatan Perbaikan
-                                @if(count($projectComments) > 0)
-                                <span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ count($projectComments) }}</span>
-                                @endif
-                            </h4>
-
-                            <!-- Add Comment Form -->
-                            <div class="mb-5 rounded-xl bg-slate-50/80 p-4 border border-slate-200/60">
-                                <div class="flex items-center gap-3 mb-3">
-                                    <select wire:model="commentType" class="rounded-lg border-slate-200 bg-white text-xs font-medium py-1.5 px-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                                        <option value="general">Umum</option>
-                                        <option value="code_review">Code Review</option>
-                                        <option value="requirement">Requirement</option>
-                                        <option value="suggestion">Saran</option>
-                                    </select>
-                                </div>
-                                <div class="flex gap-2">
-                                    <textarea wire:model="commentContent" rows="2" class="flex-1 block w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm transition" placeholder="Tulis komentar untuk siswa..."></textarea>
-                                    <button wire:click="addComment" wire:loading.attr="disabled" wire:target="addComment" type="button" class="self-end inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition disabled:opacity-50">
-                                        <span wire:loading.remove wire:target="addComment">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                                        </span>
-                                        <span wire:loading wire:target="addComment">
-                                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                                        </span>
-                                    </button>
-                                </div>
-                                @error('commentContent') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Comment History -->
-                            @if(count($projectComments) > 0)
-                            <div class="space-y-3 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;">
-                                @foreach($projectComments as $comment)
-                                <div class="rounded-xl p-3.5 border transition {{ $comment['is_pinned'] ? 'bg-amber-50/60 border-amber-200/60 ring-1 ring-amber-100' : 'bg-white/60 border-slate-200/60' }}">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0 overflow-hidden">
-                                                <x-avatar :url="$comment['teacher']['user']['avatar_url'] ?? null" :name="$comment['teacher']['user']['name'] ?? 'Guru'" />
-                                            </div>
-                                            <div class="min-w-0">
-                                                <span class="text-xs font-semibold text-slate-900">{{ $comment['teacher']['user']['name'] ?? 'Guru' }}</span>
-                                                <span class="text-xs text-slate-400 ml-1">• {{ \Carbon\Carbon::parse($comment['created_at'])->diffForHumans() }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                                            @php
-                                                $typeBadges = [
-                                                    'general' => 'bg-slate-100 text-slate-600',
-                                                    'code_review' => 'bg-violet-100 text-violet-700',
-                                                    'requirement' => 'bg-amber-100 text-amber-700',
-                                                    'suggestion' => 'bg-blue-100 text-blue-700',
-                                                ];
-                                                $typeLabels = [
-                                                    'general' => 'Umum',
-                                                    'code_review' => 'Code Review',
-                                                    'requirement' => 'Requirement',
-                                                    'suggestion' => 'Saran',
-                                                ];
-                                            @endphp
-                                            <span class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium {{ $typeBadges[$comment['comment_type']] ?? 'bg-slate-100 text-slate-600' }}">{{ $typeLabels[$comment['comment_type']] ?? $comment['comment_type'] }}</span>
-                                            @if($comment['is_pinned'])
-                                                <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v2h2a1 1 0 010 2h-1.382l-.724 5.447A2 2 0 0112.918 16h-5.836a2 2 0 01-1.976-1.553L4.382 9H3a1 1 0 010-2h2V5z"/></svg>
-                                            @endif
-                                            @if(($comment['teacher_id'] ?? null) === auth()->user()->teacher?->id)
-                                            <button wire:click="togglePinComment({{ $comment['id'] }})" type="button" class="text-slate-400 hover:text-amber-500 transition" title="{{ $comment['is_pinned'] ? 'Lepas pin' : 'Pin komentar' }}">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-slate-700 mt-2 leading-relaxed">{{ $comment['content'] }}</p>
-                                    @if($comment['status'] === 'viewed')
-                                    <span class="inline-flex items-center mt-2 text-[10px] text-emerald-600 font-medium"><svg class="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Sudah dibaca siswa</span>
-                                    @endif
-                                </div>
-                                @endforeach
-                            </div>
-                            @else
-                            <div class="text-center py-6 text-slate-400">
-                                <svg class="mx-auto h-8 w-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                                <p class="text-xs">Belum ada komentar untuk proyek ini.</p>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="bg-slate-50/50 backdrop-blur-md px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2 sm:gap-0 border-t border-slate-200/60 rounded-b-2xl">
-                        <button wire:click="closeReviewModal" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300/50 hover:bg-white transition">
-                            Tutup
-                        </button>
-                        <button wire:click="rejectProject" wire:loading.attr="disabled" wire:target="rejectProject" type="button" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl bg-rose-50/80 text-rose-700 border border-rose-200/50 px-4 py-2.5 text-sm font-semibold hover:bg-rose-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span wire:loading.remove wire:target="rejectProject">Tolak (Revisi)</span>
-                            <span wire:loading wire:target="rejectProject" class="inline-flex items-center gap-1.5">
-                                <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                                Memproses...
-                            </span>
-                        </button>
-                        <button wire:click="approveProject" wire:loading.attr="disabled" wire:target="approveProject" type="button" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span wire:loading.remove wire:target="approveProject">Terima & Validasi</span>
-                            <span wire:loading wire:target="approveProject" class="inline-flex items-center gap-1.5">
-                                <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                                Memproses...
-                            </span>
-                        </button>
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
+    <div class="mt-4">
+        {{ $antreanProyek->links() }}
     </div>
 </div>

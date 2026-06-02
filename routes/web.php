@@ -30,6 +30,10 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     \Livewire\Volt\Volt::route('projects/{project}/manage', 'project.manage')->name('projects.manage');
 });
 
+Route::middleware(['auth', 'verified', 'role:teacher'])->group(function () {
+    \Livewire\Volt\Volt::route('teacher/review/{project}', 'dashboard.teacher.review')->name('teacher.review');
+});
+
 Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('project.show');
 
 require __DIR__ . '/auth.php';

@@ -113,6 +113,11 @@ new #[Layout('layouts.app')] class extends Component {
             'submission_date' => now(),
         ]);
 
+        $activeTeachers = $student->teachers()->wherePivot('is_active', true)->get();
+        foreach ($activeTeachers as $teacher) {
+            $teacher->user->notify(new \App\Notifications\ProjectSubmitted($project, $student));
+        }
+
         if ($this->github_url) {
             \Illuminate\Support\Facades\Artisan::call('github:sync-metadata', ['--project' => $project->id]);
         }
@@ -123,21 +128,19 @@ new #[Layout('layouts.app')] class extends Component {
 }; ?>
 
 <div>
-    <x-slot name="header">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard') }}" class="inline-flex items-center justify-center p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition" wire:navigate>
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </a>
-            <h2 class="text-xl font-bold text-slate-900 leading-tight">
-                Ajukan Proyek Baru
-            </h2>
-        </div>
-    </x-slot>
-
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <a wire:navigate href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-700 mb-2 transition">
+                        <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali ke Dashboard
+                    </a>
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Ajukan Proyek Baru</h2>
+                </div>
+            </div>
             <div class="bg-white overflow-hidden shadow-sm ring-1 ring-slate-200 sm:rounded-2xl">
                 <form wire:submit.prevent="submitProject">
                     <div class="p-6 sm:p-8 space-y-8">
@@ -290,7 +293,7 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="bg-slate-50 p-6 sm:px-8 border-t border-slate-200 flex flex-col sm:flex-row-reverse gap-3 rounded-b-2xl">
                         <button type="submit" class="inline-flex w-full justify-center rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:w-auto transition items-center">
                             <span wire:loading.remove wire:target="submitProject">Kirim Proyek</span>
-                            <span wire:loading wire:target="submitProject" class="inline-flex items-center gap-2">
+                            <span wire:loading.inline-flex wire:target="submitProject" class="items-center gap-2">
                                 <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
