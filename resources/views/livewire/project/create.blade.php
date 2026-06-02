@@ -24,6 +24,14 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function mount()
     {
+        $student = auth()->user()->student;
+
+        if (!$student || !$student->is_validated) {
+            session()->flash('error', 'Akun Anda harus divalidasi oleh Admin Sekolah sebelum dapat mengunggah proyek.');
+            $this->redirectRoute('dashboard', navigate: true);
+            return;
+        }
+
         if (auth()->user()->githubToken) {
             $this->isLoadingRepos = true;
             // Optionally, we could fetch here, or use wire:init to not block page load.
