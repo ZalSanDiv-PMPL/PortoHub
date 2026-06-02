@@ -42,7 +42,7 @@ new class extends Component
 
                 <livewire:layout.notifications />
 
-                @if(auth()->user()->isStudent())
+                @if(auth()->user()->isStudent() && auth()->user()->student?->is_validated)
                     <a href="{{ route('projects.create') }}" class="inline-flex items-center rounded-md bg-blue-800 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700" wire:navigate>
                         Unggah Proyek
                     </a>
