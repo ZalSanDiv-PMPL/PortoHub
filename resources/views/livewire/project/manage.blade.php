@@ -62,7 +62,7 @@ new #[Layout('layouts.app')] class extends Component {
     public function submitProject()
     {
         if ($this->project->status === 'under_review') {
-            session()->flash('error', 'Proyek yang sedang direviu tidak dapat diubah.');
+            session()->flash('error', 'Proyek yang sedang direview tidak dapat diubah.');
             return;
         }
 
@@ -116,7 +116,7 @@ new #[Layout('layouts.app')] class extends Component {
     public function deleteProject()
     {
         if (in_array($this->project->status, ['under_review', 'approved'])) {
-            session()->flash('error', 'Proyek yang sedang direviu atau sudah lulus tidak dapat dihapus.');
+            session()->flash('error', 'Proyek yang sedang direview atau sudah lulus tidak dapat dihapus.');
             return;
         }
 
@@ -255,7 +255,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </span>
                         @elseif($project->status === 'under_review')
                             <span class="flex items-center gap-1.5 text-sm font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Sedang Direviu
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Sedang Direview
                             </span>
                         @elseif($project->status === 'approved')
                             <span class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
@@ -400,7 +400,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
                         @else
                         <div class="bg-amber-50 p-4 border-t border-amber-200 rounded-b-2xl text-center">
-                            <p class="text-sm font-medium text-amber-800">Proyek sedang direviu oleh guru dan tidak dapat diubah.</p>
+                            <p class="text-sm font-medium text-amber-800">Proyek sedang direview oleh guru dan tidak dapat diubah.</p>
                         </div>
                         @endif
                     </form>

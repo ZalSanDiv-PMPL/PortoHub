@@ -122,7 +122,7 @@ new #[Layout('layouts.app')] class extends Component {
             \Illuminate\Support\Facades\Artisan::call('github:sync-metadata', ['--project' => $project->id]);
         }
 
-        session()->flash('success', 'Proyek berhasil diajukan untuk direviu.');
+        session()->flash('success', 'Proyek berhasil diajukan untuk direview.');
         return redirect()->route('dashboard');
     }
 }; ?>

@@ -29,7 +29,7 @@ new class extends Component
                     @if(auth()->user()->isStudent() && auth()->user()->student)
                         <a href="{{ route('student.profile', ['username' => auth()->user()->username]) }}" class="text-sm font-medium transition {{ request()->routeIs('student.profile') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Portofolioku</a>
                     @endif
-                    <a href="{{ route('dashboard') }}" class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Dasbor</a>
+                    <a href="{{ route('dashboard') }}" class="text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-500 hover:text-blue-700' }}" wire:navigate>Dashboard</a>
                 @else
                     <a href="{{ route('home') }}#testimoni" class="text-sm font-medium text-slate-500 transition hover:text-blue-700">Testimoni</a>
                 @endauth

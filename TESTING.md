@@ -128,7 +128,7 @@ Pengujian ini memastikan Admin memiliki kontrol ketat terhadap pengguna baru seb
 ### 5B. Pengajuan Ulang Proyek
 1. Nabila mengklik tombol biru besar **"Ajukan Ulang Proyek"** di bagian bawah *Modal* diskusi.
 2. **Ekspektasi:** Status proyek Nabila di Dashboard kembali menjadi **Under Review** (kuning).
-3. Saat Guru (`pak-hendra`) mengecek kembali Dashboard-nya, antrean Nabila akan naik kembali untuk direviu.
+3. Saat Guru (`pak-hendra`) mengecek kembali Dashboard-nya, antrean Nabila akan naik kembali untuk direview.
 
 ---
 

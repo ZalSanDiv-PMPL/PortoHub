@@ -226,7 +226,7 @@ new class extends Component {
         <div class="p-4 flex-1 space-y-1 overflow-y-auto">
             <button wire:click="switchTab('overview')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {{ $currentTab === 'overview' ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-600/20' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 {{ $currentTab === 'overview' ? 'text-blue-600' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
-                Ikhtisar
+                Overview
             </button>
             <button wire:click="switchTab('users')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {{ $currentTab === 'users' ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-600/20' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 {{ $currentTab === 'users' ? 'text-blue-600' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
@@ -255,7 +255,7 @@ new class extends Component {
                 </button>
                 <div>
                     <h2 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900 leading-tight">
-                        @if($currentTab === 'overview') Ikhtisar Admin
+                        @if($currentTab === 'overview') Overview Admin
                         @elseif($currentTab === 'users') Manajemen Pengguna
                         @elseif($currentTab === 'classes') Penempatan Kelas
                         @endif

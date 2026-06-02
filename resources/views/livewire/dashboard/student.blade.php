@@ -60,7 +60,7 @@ new class extends Component {
             }
 
             $this->closeFeedbackModal();
-            session()->flash('success', 'Proyek berhasil diajukan ulang untuk direviu.');
+            session()->flash('success', 'Proyek berhasil diajukan ulang untuk direview.');
         }
     }
 
@@ -104,7 +104,7 @@ new class extends Component {
         $allProjects = $student ? $student->projects()->get() : collect();
         
         $totalProyek = $allProjects->count();
-        $sedangDireviu = $allProjects->where('status', 'under_review')->count();
+        $sedangDireview = $allProjects->where('status', 'under_review')->count();
         $proyekLulus = $allProjects->where('status', 'approved')->count();
 
         // Query for displayed projects with unread comments count
@@ -135,7 +135,7 @@ new class extends Component {
 
         return [
             'totalProyek' => $totalProyek,
-            'sedangDireviu' => $sedangDireviu,
+            'sedangDireview' => $sedangDireview,
             'proyekLulus' => $proyekLulus,
             'projects' => $projects,
         ];
@@ -245,10 +245,10 @@ new class extends Component {
                             d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <p class="ml-16 truncate text-sm font-medium text-slate-500">Sedang Direviu</p>
+                <p class="ml-16 truncate text-sm font-medium text-slate-500">Sedang Direview</p>
             </dt>
             <dd class="ml-16 flex items-baseline">
-                <p class="text-2xl font-bold text-slate-900">{{ $sedangDireviu }}</p>
+                <p class="text-2xl font-bold text-slate-900">{{ $sedangDireview }}</p>
             </dd>
         </div>
 
@@ -276,7 +276,7 @@ new class extends Component {
         <h3 class="text-lg font-bold text-slate-900">Proyek Saya</h3>
         <div class="flex flex-wrap gap-2">
             <button wire:click="$set('filterStatus', 'all')" class="px-3 py-1.5 text-xs font-semibold rounded-full border transition {{ $filterStatus === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">Semua</button>
-            <button wire:click="$set('filterStatus', 'under_review')" class="px-3 py-1.5 text-xs font-semibold rounded-full border transition {{ $filterStatus === 'under_review' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">Direviu</button>
+            <button wire:click="$set('filterStatus', 'under_review')" class="px-3 py-1.5 text-xs font-semibold rounded-full border transition {{ $filterStatus === 'under_review' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">Direview</button>
             <button wire:click="$set('filterStatus', 'approved')" class="px-3 py-1.5 text-xs font-semibold rounded-full border transition {{ $filterStatus === 'approved' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">Lulus</button>
             <button wire:click="$set('filterStatus', 'rejected')" class="px-3 py-1.5 text-xs font-semibold rounded-full border transition {{ $filterStatus === 'rejected' ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">Revisi</button>
         </div>

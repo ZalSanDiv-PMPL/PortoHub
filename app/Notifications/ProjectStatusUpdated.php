@@ -41,8 +41,8 @@ class ProjectStatusUpdated extends Notification
         $statusLabels = [
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak/Revisi',
-            'under_review' => 'Sedang Direviu',
-            'submitted' => 'Menunggu Reviu',
+            'under_review' => 'Sedang Direview',
+            'submitted' => 'Menunggu Review',
             'archived' => 'Diarsipkan',
             'draft' => 'Draft',
         ];
