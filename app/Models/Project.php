@@ -29,6 +29,7 @@ class Project extends Model
     ];
 
     protected $casts = [
+        'student_id' => 'integer',
         'submission_date' => 'datetime',
         'approval_date' => 'datetime',
         'tech_stack' => 'array',

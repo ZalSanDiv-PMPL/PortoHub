@@ -29,6 +29,8 @@ class GithubMetadata extends Model
     ];
 
     protected $casts = [
+        'project_id' => 'integer',
+        'commit_count' => 'integer',
         'last_commit_at' => 'datetime',
         'last_synced_at' => 'datetime',
         'is_public' => 'boolean',

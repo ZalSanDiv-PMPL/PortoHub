@@ -13,6 +13,7 @@ class GithubToken extends Model
     protected $table = 'github_tokens';
 
     protected $casts = [
+        'user_id' => 'integer',
         'token_expires_at' => 'datetime',
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',

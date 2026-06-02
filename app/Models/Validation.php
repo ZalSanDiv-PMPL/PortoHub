@@ -25,6 +25,8 @@ class Validation extends Model
     ];
 
     protected $casts = [
+        'project_id' => 'integer',
+        'teacher_id' => 'integer',
         'is_approved' => 'boolean',
         'validation_date' => 'datetime',
     ];
