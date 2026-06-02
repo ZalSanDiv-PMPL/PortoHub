@@ -227,8 +227,8 @@ class GitHubAppAuthController extends Controller
 
         Student::create([
             'user_id' => $user->id,
-            'nis' => '',
-            'year' => date('Y'),
+            'nis' => null,
+            'year' => null,
         ]);
 
         // Simpan token untuk pengguna baru

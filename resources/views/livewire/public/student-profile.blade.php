@@ -76,16 +76,32 @@
                     <div x-data="{
                         shareProfile() {
                             const url = '{{ url('/@' . $student->user->username) }}';
-                            const title = @json($student->user->name . ' - Portofolio Proyek');
+                            const title = '{{ addslashes($student->user->name . " - Portofolio Proyek") }}';
                             
-                            if (navigator.share) {
+                            if (navigator.share && window.isSecureContext) {
                                 navigator.share({
                                     title: title,
                                     url: url
                                 }).catch(console.error);
+                            } else if (navigator.clipboard && window.isSecureContext) {
+                                navigator.clipboard.writeText(url).then(() => {
+                                    alert('Link profil berhasil disalin ke clipboard!');
+                                }).catch(console.error);
                             } else {
-                                navigator.clipboard.writeText(url);
-                                alert('Link profil berhasil disalin ke clipboard!');
+                                const textArea = document.createElement('textarea');
+                                textArea.value = url;
+                                textArea.style.position = 'fixed';
+                                textArea.style.opacity = '0';
+                                document.body.appendChild(textArea);
+                                textArea.focus();
+                                textArea.select();
+                                try {
+                                    document.execCommand('copy');
+                                    alert('Link profil berhasil disalin ke clipboard!');
+                                } catch (err) {
+                                    prompt('Salin link berikut secara manual:', url);
+                                }
+                                document.body.removeChild(textArea);
                             }
                         }
                     }">
