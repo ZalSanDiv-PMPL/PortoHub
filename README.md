@@ -140,12 +140,20 @@ php artisan migrate --force
 ```
 
 ### 6. Background Jobs & Scheduler (Penting)
-Karena aplikasi sangat bergantung pada *Queue* dan sinkronisasi GitHub:
-1. **Supervisor**: Gunakan Supervisor untuk memastikan `php artisan queue:work` berjalan abadi (di background) dan otomatis *restart* jika terjadi *crash*.
-2. **Cron Job**: Tambahkan *entry* Cron Job di server Anda (misal via `crontab -e` atau cPanel) agar berjalan setiap menit:
+Aplikasi sangat bergantung pada *Queue* dan sinkronisasi GitHub otomatis. Untuk pengguna **cPanel / Shared Hosting** (tanpa akses Supervisor), tambahkan **2 Cron Jobs** ini agar berjalan setiap menit (`* * * * *`):
+
+**Cron Job 1: Menjalankan Scheduler (Otomatis memicu sinkronisasi GitHub)**
 ```bash
-* * * * * cd /path/to/portohub && php artisan schedule:run >> /dev/null 2>&1
+/usr/local/bin/php /home/username_cpanel/public_html/portohub/artisan schedule:run >> /dev/null 2>&1
 ```
+
+**Cron Job 2: Memproses Antrean Latar Belakang (Notifikasi, Job Latar Belakang)**
+```bash
+/usr/local/bin/php /home/username_cpanel/public_html/portohub/artisan queue:work --stop-when-empty >> /dev/null 2>&1
+```
+*(Catatan: Sesuaikan `/usr/local/bin/php` dan *path* proyek dengan lokasi instalasi di server Anda. Parameter `--stop-when-empty` sangat esensial agar server tidak kelebihan muatan/overload).*
+
+*(Opsional)* Jika Anda menggunakan VPS mandiri, Anda tetap direkomendasikan menggunakan utilitas manajemen proses seperti **Supervisor** untuk `queue:work`.
 
 ---
 
